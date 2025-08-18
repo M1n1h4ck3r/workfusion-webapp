@@ -17,7 +17,17 @@ import {
   Shield,
   Sparkles,
   Gift,
-  AlertCircle
+  AlertCircle,
+  PaypalIcon as Paypal,
+  Calendar,
+  BarChart3,
+  Settings,
+  Plus,
+  Trash2,
+  Edit3,
+  DollarSign,
+  Repeat,
+  Crown
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -66,32 +76,97 @@ const tokenPackages = [
 const subscriptionPlans = [
   {
     id: 'sub-1',
-    name: 'Monthly Pro',
-    tokens: 5000,
-    price: 29.99,
+    name: 'Starter',
+    tokens: 2500,
+    price: 19.99,
     period: 'month',
+    tier: 'Basic',
     features: [
-      '5,000 tokens per month',
-      'Priority support',
-      'Advanced analytics',
-      'API access'
+      '2,500 tokens per month',
+      'Email support',
+      'Basic analytics',
+      'Standard AI models'
     ]
   },
   {
     id: 'sub-2',
-    name: 'Monthly Business',
-    tokens: 15000,
-    price: 79.99,
+    name: 'Professional',
+    tokens: 10000,
+    price: 49.99,
     period: 'month',
+    tier: 'Pro',
+    popular: true,
     features: [
-      '15,000 tokens per month',
-      'Dedicated support',
+      '10,000 tokens per month',
+      'Priority support',
+      'Advanced analytics',
+      'API access',
       'Custom integrations',
+      'Voice cloning'
+    ]
+  },
+  {
+    id: 'sub-3',
+    name: 'Business',
+    tokens: 50000,
+    price: 199.99,
+    period: 'month',
+    tier: 'Business',
+    features: [
+      '50,000 tokens per month',
+      'Dedicated support',
+      'Custom AI models',
       'Team collaboration',
-      'White-label options'
+      'White-label options',
+      'Advanced voice synthesis',
+      'Priority processing'
+    ]
+  },
+  {
+    id: 'sub-4',
+    name: 'Enterprise',
+    tokens: -1,
+    price: 'Custom',
+    period: 'month',
+    tier: 'Enterprise',
+    features: [
+      'Unlimited tokens',
+      '24/7 dedicated support',
+      'Custom AI training',
+      'Multi-tenant architecture',
+      'SLA guarantees',
+      'On-premise deployment',
+      'Custom integrations'
     ]
   }
 ]
+
+const paymentMethods = [
+  {
+    id: 'card-1',
+    type: 'Credit Card',
+    brand: 'Visa',
+    last4: '4242',
+    expiry: '12/26',
+    isDefault: true
+  },
+  {
+    id: 'card-2',
+    type: 'Credit Card', 
+    brand: 'MasterCard',
+    last4: '8888',
+    expiry: '08/25',
+    isDefault: false
+  }
+]
+
+const billingAnalytics = {
+  monthlySpend: 149.97,
+  tokensUsed: 12847,
+  averageDaily: 415,
+  projectedMonthly: 187.50,
+  savings: 29.99
+}
 
 const paymentHistory = [
   { id: 1, date: '2024-01-15', description: 'Growth Pack', amount: 39.99, tokens: 5500, status: 'completed' },
@@ -104,7 +179,10 @@ const paymentHistory = [
 export default function BillingPage() {
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [activeTab, setActiveTab] = useState<'tokens' | 'subscription' | 'history'>('tokens')
+  const [activeTab, setActiveTab] = useState<'tokens' | 'subscription' | 'history' | 'analytics' | 'methods'>('tokens')
+  const [currentPlan, setCurrentPlan] = useState<string>('sub-2')
+  const [isUpgrading, setIsUpgrading] = useState(false)
+  const [showAddPayment, setShowAddPayment] = useState(false)
 
   const currentTokens = 482
   const totalTokensUsed = 1892
@@ -128,19 +206,50 @@ export default function BillingPage() {
   }
 
   const handleSubscribe = async (planId: string) => {
-    setIsProcessing(true)
-
+    setIsUpgrading(true)
+    
     try {
-      // TODO: Implement Stripe subscription
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      toast.success('Subscription activated successfully!')
+      setCurrentPlan(planId)
+      toast.success('Subscription updated successfully!')
     } catch (error) {
-      toast.error('Subscription failed. Please try again.')
+      toast.error('Subscription update failed. Please try again.')
     } finally {
-      setIsProcessing(false)
+      setIsUpgrading(false)
     }
   }
+
+  const handleAddPaymentMethod = () => {
+    setShowAddPayment(true)
+    // TODO: Open Stripe payment method setup
+    setTimeout(() => {
+      setShowAddPayment(false)
+      toast.success('Payment method added successfully!')
+    }, 2000)
+  }
+
+  const handleRemovePaymentMethod = (methodId: string) => {
+    toast.success('Payment method removed')
+  }
+
+  const handleSetDefaultPayment = (methodId: string) => {
+    toast.success('Default payment method updated')
+  }
+
+  const getCurrentPlan = () => {
+    return subscriptionPlans.find(plan => plan.id === currentPlan)
+  }
+
+  const getPlanBadgeColor = (tier: string) => {
+    switch (tier) {
+      case 'Basic': return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+      case 'Pro': return 'bg-primary-green/20 text-primary-green border-primary-green/30'
+      case 'Business': return 'bg-primary-yellow/20 text-primary-yellow border-primary-yellow/30'
+      case 'Enterprise': return 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+    }
+  }
+
 
   const downloadInvoice = (paymentId: number) => {
     // TODO: Implement invoice download
