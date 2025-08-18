@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { LogoAnimation } from '@/components/animations/LogoAnimation'
 import { TypewriterText } from '@/components/animations/TypewriterText'
 import { FloatingParticles } from '@/components/animations/FloatingParticles'
@@ -56,17 +57,87 @@ export default function Home() {
               Test our AI tools with 500 free tokens and discover how AI can revolutionize your workflow.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-              <Link href="/playground">
-                <Button size="lg" className="btn-primary text-lg px-8 py-4 group">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
+              <Link href="/playground" className="group">
+                <motion.div
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="relative"
+                >
+                  {/* Glowing background effect */}
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-primary rounded-lg blur-xl opacity-60"
+                    animate={{
+                      scale: [1, 1.1, 1],
+                      opacity: [0.5, 0.8, 0.5],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  
+                  <Button 
+                    size="lg" 
+                    className="relative btn-primary text-lg px-8 py-4 group overflow-hidden"
+                  >
+                    {/* Animated background shine */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      animate={{
+                        x: ['-100%', '100%'],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 3,
+                        ease: "easeInOut",
+                      }}
+                    />
+                    
+                    <span className="relative z-10 flex items-center">
+                      Start Free Trial
+                      <motion.div
+                        className="ml-2"
+                        animate={{ x: [0, 5, 0] }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      </motion.div>
+                    </span>
+                  </Button>
+                </motion.div>
               </Link>
-              <Link href="/services">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-4 glass text-white border-white/20 hover:bg-white/10">
-                  Learn More
-                </Button>
+              
+              <Link href="/services" className="group">
+                <motion.div
+                  whileHover={{ scale: 1.02, y: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="relative"
+                >
+                  {/* Subtle glow for secondary button */}
+                  <motion.div
+                    className="absolute inset-0 bg-white/10 rounded-lg blur-lg opacity-30"
+                    whileHover={{
+                      scale: 1.05,
+                      opacity: 0.5,
+                    }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  
+                  <Button 
+                    size="lg" 
+                    variant="outline" 
+                    className="relative text-lg px-8 py-4 glass text-white border-white/30 hover:bg-white/15 hover:border-white/50 transition-all duration-300"
+                  >
+                    <span className="relative z-10">Learn More</span>
+                  </Button>
+                </motion.div>
               </Link>
             </div>
 

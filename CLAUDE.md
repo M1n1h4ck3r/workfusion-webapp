@@ -6,6 +6,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 WorkFusion - AI Agency web application built with Next.js 15 and React 19.
 
+## Deployment Strategy
+
+### Version Control and GitHub Deployment
+
+**Automatic Deployment Policy:**
+Deploy to GitHub automatically after major changes, bug fixes, or important milestones without asking for permission.
+
+**Versioning Strategy:**
+- **Current Phase (Phase 1):** v1.0 (initial), v1.1, v1.2, v1.3... for incremental changes
+- **New Phases:** v2.0 (phase start), v2.1, v2.2... for changes within phase
+- **Subsequent Phases:** v3.0, v4.0... for new phase starts
+
+**Auto-deploy Triggers:**
+- Major feature additions
+- Important bug fixes  
+- Significant milestones
+- Phase completions
+
+**Deployment Process:**
+1. Git commit with descriptive message
+2. Create version tag (v1.x, v2.x, etc.)
+3. Push to GitHub repository
+4. Create GitHub release if major milestone
+
 ## Commands
 
 ### Development
