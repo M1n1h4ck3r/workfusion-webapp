@@ -13,7 +13,9 @@ import {
   Activity, AlertCircle, CheckCircle2, Clock,
   BarChart3, Users, Zap, Filter, Download,
   Edit3, MoreVertical, Code, Link2, Database,
-  Lock, Unlock, Bell, Calendar, Target
+  Lock, Unlock, Bell, BellOff, Calendar, Target,
+  Send, TestTube, PlayCircle, CheckCircle,
+  XCircle, AlertTriangle, Timer, Pause
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -206,6 +208,8 @@ export default function APIManagementPage() {
   const [newWebhookUrl, setNewWebhookUrl] = useState('')
   const [selectedEvents, setSelectedEvents] = useState<string[]>([])
   const [showApiKey, setShowApiKey] = useState<string | null>(null)
+  const [testingWebhook, setTestingWebhook] = useState<string | null>(null)
+  const [webhookTestResults, setWebhookTestResults] = useState<{ [key: string]: any }>({})
 
   const availablePermissions = [
     { id: 'chat', name: 'Chat Completions', description: 'Access to AI chat endpoints' },
@@ -311,6 +315,38 @@ export default function APIManagementPage() {
         ? { ...webhook, status: webhook.status === 'active' ? 'paused' as const : 'active' as const }
         : webhook
     ))
+  }
+
+  const handleTestWebhook = async (webhookId: string) => {
+    setTestingWebhook(webhookId)
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Simulate webhook test
+      const testResult = {
+        status: Math.random() > 0.3 ? 'success' : 'failed',
+        responseTime: Math.floor(Math.random() * 500) + 100,
+        statusCode: Math.random() > 0.3 ? 200 : Math.random() > 0.5 ? 404 : 500,
+        timestamp: new Date().toISOString(),
+        testPayload: {
+          event: 'test.webhook',
+          data: { message: 'This is a test webhook delivery' }
+        }
+      }
+      
+      setWebhookTestResults(prev => ({ ...prev, [webhookId]: testResult }))
+      
+      if (testResult.status === 'success') {
+        toast.success(`Webhook test successful (${testResult.responseTime}ms)`)
+      } else {
+        toast.error(`Webhook test failed (Status: ${testResult.statusCode})`)
+      }
+    } catch (error) {
+      toast.error('Failed to test webhook')
+    } finally {
+      setTestingWebhook(null)
+    }
   }
 
   const copyToClipboard = (text: string) => {
@@ -806,15 +842,31 @@ export default function APIManagementPage() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        onClick={() => handleTestWebhook(webhook.id)}
+                        disabled={testingWebhook === webhook.id}
+                        className="text-white/60 hover:text-white"
+                        title="Test webhook"
+                      >
+                        {testingWebhook === webhook.id ? (
+                          <LoadingSpinner size="sm" />
+                        ) : (
+                          <TestTube className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleToggleWebhook(webhook.id)}
                         className="text-white/60 hover:text-white"
+                        title={webhook.status === 'active' ? 'Pause webhook' : 'Activate webhook'}
                       >
-                        {webhook.status === 'active' ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                        {webhook.status === 'active' ? <Pause className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         className="text-white/60 hover:text-white"
+                        title="Edit webhook"
                       >
                         <Edit3 className="h-4 w-4" />
                       </Button>
@@ -822,12 +874,54 @@ export default function APIManagementPage() {
                         variant="ghost"
                         size="sm"
                         className="text-red-400 hover:text-red-300"
+                        title="Delete webhook"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                   
+                  {/* Test Results */}
+                  {webhookTestResults[webhook.id] && (
+                    <div className="mt-4 p-3 glass rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-white">Last Test Result</span>
+                        <div className="flex items-center space-x-2">
+                          {webhookTestResults[webhook.id].status === 'success' ? (
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-400" />
+                          )}
+                          <span className={`text-xs ${
+                            webhookTestResults[webhook.id].status === 'success' 
+                              ? 'text-green-400' 
+                              : 'text-red-400'
+                          }`}>
+                            {webhookTestResults[webhook.id].status}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-xs text-white/60">
+                        <div>
+                          <span className="block">Response Time</span>
+                          <span className="text-white">{webhookTestResults[webhook.id].responseTime}ms</span>
+                        </div>
+                        <div>
+                          <span className="block">Status Code</span>
+                          <span className="text-white">{webhookTestResults[webhook.id].statusCode}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-2">
+                        <span className="text-xs text-white/60">Test Payload:</span>
+                        <pre className="text-xs text-white/80 mt-1 overflow-x-auto">
+                          {JSON.stringify(webhookTestResults[webhook.id].testPayload, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Success Rate */}
                   <div className="mt-4">
                     <div className="flex items-center justify-between text-xs text-white/60 mb-1">

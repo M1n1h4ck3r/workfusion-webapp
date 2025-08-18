@@ -17,7 +17,8 @@
       "Bash(mv:*)",
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": [],
