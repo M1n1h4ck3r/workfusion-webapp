@@ -120,11 +120,24 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
         throw new Error('Failed to deduct tokens')
       }
 
-      // Get AI response
-      const response = await aiService.sendMessage(
-        newMessages.slice(-10), // Keep last 10 messages for context
-        personality
-      )
+      // Use the secure API route for chat processing
+      const chatResponse = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: newMessages.slice(-10), // Keep last 10 messages for context
+          personality: personality
+        })
+      })
+
+      if (!chatResponse.ok) {
+        const error = await chatResponse.json()
+        throw new Error(error.error || 'Failed to get AI response')
+      }
+
+      const { response, tokensUsed, remaining } = await chatResponse.json()
 
       // Simulate typing effect
       await new Promise(resolve => setTimeout(resolve, 500))
@@ -140,8 +153,8 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
       // Call token use callback
       onTokenUse?.(tokenCost)
 
-      // Show success toast
-      toast.success(`-${tokenCost} tokens used`, {
+      // Show success toast with actual token usage
+      toast.success(`-${tokensUsed || tokenCost} tokens used | ${remaining} API calls remaining`, {
         icon: <Zap className="h-4 w-4 text-primary-yellow" />
       })
 

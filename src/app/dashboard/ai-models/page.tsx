@@ -23,9 +23,21 @@ export default function AIModelsPage() {
   const [selectedModels, setSelectedModels] = useState<string[]>([])
   const [activeTab, setActiveTab] = useState<'overview' | 'providers' | 'models' | 'comparison' | 'monitoring'>('overview')
   const [isComparing, setIsComparing] = useState(false)
-  const [comparisonResults, setComparisonResults] = useState<any>(null)
+  const [comparisonResults, setComparisonResults] = useState<{
+    prompt: string
+    models: Array<{
+      model: { id: string; name: string; provider: string }
+      response: string
+      time: number
+      score: number
+    }>
+  } | null>(null)
   const [testPrompt, setTestPrompt] = useState('Explain quantum computing in simple terms')
-  const [healthStatus, setHealthStatus] = useState<Map<string, any>>(new Map())
+  const [healthStatus, setHealthStatus] = useState<Map<string, {
+    status: 'healthy' | 'degraded' | 'down'
+    latency: number
+    lastCheck: Date
+  }>>(new Map())
   const [isMonitoring, setIsMonitoring] = useState(false)
 
   useEffect(() => {
@@ -545,7 +557,7 @@ export default function AIModelsPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {comparisonResults.models.map((result: any, index: number) => (
+                  {comparisonResults.models.map((result, index) => (
                     <div
                       key={result.model.id}
                       className={`p-4 rounded-lg border-2 ${

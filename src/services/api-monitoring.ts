@@ -185,7 +185,12 @@ class APIMonitoringService {
         acc[endpoint].errors++
       }
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, {
+      requests: number
+      errors: number
+      averageResponseTime: number
+      successRate?: number
+    }>)
 
     // Calculate averages and success rates
     Object.keys(endpointStats).forEach(endpoint => {
@@ -217,7 +222,13 @@ class APIMonitoringService {
         acc[keyId].rateLimited++
       }
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, {
+      requests: number
+      errors: number
+      averageResponseTime: number
+      rateLimited: number
+      successRate?: number
+    }>)
 
     // Calculate API key averages and success rates
     Object.keys(apiKeyStats).forEach(keyId => {
@@ -329,7 +340,16 @@ class APIMonitoringService {
   // Get current rate limit status for all endpoints
   getCurrentRateLimits() {
     const now = Date.now()
-    const limits: Record<string, any> = {}
+    const limits: Record<string, {
+      requests: number
+      windowMs: number
+      current: Array<{
+        identifier: string
+        count: number
+        resetTime: number
+        remaining: number
+      }>
+    }> = {}
 
     this.rateLimits.forEach((config, endpoint) => {
       limits[endpoint] = {
@@ -356,7 +376,7 @@ export const apiMonitoringService = new APIMonitoringService()
 
 // Middleware helper for Express-like frameworks
 export function createRateLimitMiddleware(endpoint: string) {
-  return (req: any, res: any, next: any) => {
+  return (req: { headers: Record<string, string>; ip?: string; method: string }, res: { status: (code: number) => { json: (data: object) => void } }, next: () => void) => {
     const identifier = req.headers['x-api-key'] || req.ip || 'anonymous'
     const result = apiMonitoringService.checkRateLimit(endpoint, identifier)
 
@@ -380,7 +400,7 @@ export function createRateLimitMiddleware(endpoint: string) {
 }
 
 // Request tracking helper
-export function trackAPIRequest(req: any, res: any, responseTime: number) {
+export function trackAPIRequest(req: { url?: string; path?: string; method: string; headers: Record<string, string>; ip?: string }, res: { statusCode: number }, responseTime: number) {
   apiMonitoringService.trackRequest({
     endpoint: req.url || req.path,
     method: req.method,

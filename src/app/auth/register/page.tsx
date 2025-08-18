@@ -108,9 +108,9 @@ export default function RegisterPage() {
       await signUp(formData.email, formData.password, formData.name)
       toast.success('Account created successfully! Welcome to WorkFusion!')
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Registration error:', err)
-      setError(err.message || 'Registration failed. Please try again.')
+      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -125,9 +125,9 @@ export default function RegisterPage() {
       await signInWithProvider(provider)
       toast.success(`Welcome! Redirecting to dashboard...`)
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`${provider} OAuth error:`, err)
-      setError(err.message || `Failed to register with ${provider}. Please try again.`)
+      setError(err instanceof Error ? err.message : `Failed to register with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
     }

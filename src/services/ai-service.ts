@@ -279,14 +279,38 @@ class AIService {
   }
 }
 
-// Create a singleton instance with demo mode by default
+// Create a singleton instance with auto-detection
 let aiServiceInstance: AIService | null = null
+
+function detectAIProvider(): AIConfig {
+  // Check for OpenAI API key
+  const openaiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY || process.env.OPENAI_API_KEY
+  if (openaiKey && openaiKey !== 'your_openai_api_key_here' && !openaiKey.includes('placeholder')) {
+    return {
+      provider: 'openai',
+      apiKey: openaiKey,
+      model: 'gpt-4-turbo-preview'
+    }
+  }
+
+  // Check for Anthropic API key
+  const anthropicKey = process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY
+  if (anthropicKey && anthropicKey !== 'your_anthropic_api_key_here' && !anthropicKey.includes('placeholder')) {
+    return {
+      provider: 'anthropic',
+      apiKey: anthropicKey,
+      model: 'claude-3-sonnet-20240229'
+    }
+  }
+
+  // Fallback to demo mode
+  console.warn('No AI API keys configured. Using demo mode. Configure OPENAI_API_KEY or ANTHROPIC_API_KEY for real AI responses.')
+  return { provider: 'demo' }
+}
 
 export function getAIService(config?: AIConfig): AIService {
   if (!aiServiceInstance || config) {
-    aiServiceInstance = new AIService(config || {
-      provider: 'demo'
-    })
+    aiServiceInstance = new AIService(config || detectAIProvider())
   }
   return aiServiceInstance
 }

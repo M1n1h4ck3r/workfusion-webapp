@@ -57,9 +57,9 @@ export default function LoginPage() {
       await signIn(email, password)
       toast.success('Welcome back! Redirecting to dashboard...')
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err)
-      setError(err.message || 'Invalid email or password')
+      setError(err instanceof Error ? err.message : 'Invalid email or password')
     } finally {
       setIsLoading(false)
     }
@@ -74,9 +74,9 @@ export default function LoginPage() {
       await signInWithProvider(provider)
       toast.success(`Welcome back! Redirecting to dashboard...`)
       
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(`${provider} OAuth error:`, err)
-      setError(err.message || `Failed to login with ${provider}. Please try again.`)
+      setError(err instanceof Error ? err.message : `Failed to login with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
     }

@@ -18,7 +18,8 @@
       "Bash(npx tsc:*)",
       "Bash(git add:*)",
       "Bash(git tag:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": [],
