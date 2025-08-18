@@ -1,0 +1,56 @@
+{
+  "title": "AI Playground",
+  "description": "Test our AI tools and see the magic happen",
+  "assistants": {
+    "title": "AI Assistants",
+    "alex": {
+      "name": "Alex Hormozi",
+      "role": "Business Strategist",
+      "description": "Get direct, actionable business advice from the master of offers and value creation."
+    },
+    "jordan": {
+      "name": "Jordan Peterson",
+      "role": "Personal Development Coach",
+      "description": "Receive thoughtful insights about personal development and life philosophy."
+    },
+    "daedalus": {
+      "name": "Daedalus",
+      "role": "Civil Engineer Expert",
+      "description": "Professional technical advice about construction, materials, and engineering."
+    },
+    "sensei": {
+      "name": "Sensei Suki Harada",
+      "role": "Productivity Expert",
+      "description": "Blend Eastern philosophy with modern productivity techniques for better time management."
+    }
+  },
+  "tools": {
+    "whatsapp": {
+      "title": "WhatsApp Messenger",
+      "description": "Send text and audio messages directly to WhatsApp"
+    },
+    "phone": {
+      "title": "Phone Call Test",
+      "description": "Experience our AI voice capabilities with a live call"
+    },
+    "tts": {
+      "title": "Text to Speech",
+      "description": "Convert your text into natural-sounding speech"
+    },
+    "qr": {
+      "title": "WhatsApp QR Scanner",
+      "description": "Connect your WhatsApp Web for automation"
+    }
+  },
+  "interface": {
+    "selectTool": "Select a tool to get started",
+    "tokenCost": "Token cost:",
+    "yourMessage": "Your message...",
+    "send": "Send",
+    "processing": "Processing...",
+    "tryAgain": "Try Again",
+    "newConversation": "New Conversation",
+    "saveConversation": "Save Conversation",
+    "exportChat": "Export Chat"
+  }
+}

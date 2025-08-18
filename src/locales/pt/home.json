@@ -1,0 +1,48 @@
+{
+  "hero": {
+    "badge": "🚀 Playground de IA Disponível",
+    "title": "Transforme Seu Negócio com",
+    "titleHighlight": "Automação de IA",
+    "description": "Experimente o futuro da automação, chatbots e análise de dados. Teste nossas ferramentas de IA com 500 tokens gratuitos e descubra como a IA pode revolucionar seu fluxo de trabalho.",
+    "stats": {
+      "freeTokens": "500+",
+      "freeTokensLabel": "Tokens Gratuitos",
+      "experts": "4",
+      "expertsLabel": "Especialistas IA",
+      "availability": "24/7",
+      "availabilityLabel": "Disponibilidade",
+      "responseTime": "< 2s",
+      "responseTimeLabel": "Tempo de Resposta"
+    }
+  },
+  "features": {
+    "badge": "Playground de IA",
+    "title": "Ferramentas Poderosas de IA na Ponta dos Seus",
+    "titleHighlight": "Dedos",
+    "description": "Explore nosso conjunto abrangente de ferramentas movidas por IA, projetadas para otimizar suas operações comerciais e aumentar a produtividade.",
+    "aiAssistants": {
+      "title": "Assistentes de IA",
+      "description": "Converse com especialistas em IA como Alex Hormozi, Jordan Peterson e muito mais.",
+      "badge": "4 Especialistas"
+    },
+    "whatsapp": {
+      "title": "Integração WhatsApp",
+      "description": "Envie mensagens e áudios diretamente para o WhatsApp com nossa poderosa automação.",
+      "badge": "Novo"
+    },
+    "phoneCalls": {
+      "title": "Ligações Telefônicas",
+      "description": "Teste nossas capacidades de voz IA com demonstrações automatizadas de chamadas.",
+      "badge": "Beta"
+    },
+    "tts": {
+      "title": "Texto para Fala",
+      "description": "Converta texto em fala com som natural com várias opções de voz.",
+      "badge": "Multi-Voz"
+    }
+  },
+  "cta": {
+    "title": "Pronto para Transformar Seu Negócio?",
+    "description": "Junte-se a milhares de empresas que já usam IA para automatizar fluxos de trabalho, melhorar o atendimento ao cliente e impulsionar o crescimento."
+  }
+}

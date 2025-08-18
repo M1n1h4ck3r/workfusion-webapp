@@ -1,0 +1,51 @@
+{
+  "navigation": {
+    "home": "Início",
+    "about": "Sobre",
+    "services": "Serviços",
+    "playground": "Playground de IA",
+    "blog": "Blog",
+    "contact": "Contato",
+    "dashboard": "Painel",
+    "login": "Entrar",
+    "register": "Começar",
+    "logout": "Sair"
+  },
+  "buttons": {
+    "getStarted": "Começar",
+    "learnMore": "Saiba Mais",
+    "tryFree": "Teste Grátis",
+    "contactSales": "Falar com Vendas",
+    "startTrial": "Iniciar Teste Grátis",
+    "tryAllTools": "Testar Todas as Ferramentas",
+    "rechargeNow": "Recarregar Agora"
+  },
+  "tokens": {
+    "balance": "tokens",
+    "lowBalance": "Poucos tokens?",
+    "free": "Tokens Gratuitos"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "new": "Novo",
+    "hot": "Popular",
+    "beta": "Beta"
+  },
+  "footer": {
+    "company": "Workfusion.pro",
+    "tagline": "Transformando negócios com soluções de IA de ponta. Experimente o futuro da automação, comunicação e análise de dados.",
+    "contact": "Fale Conosco",
+    "quickLinks": "Links Rápidos",
+    "legal": "Legal",
+    "madeWith": "Feito com",
+    "byTeam": "pela Equipe Workfusion",
+    "allRights": "Todos os direitos reservados.",
+    "compliance": "Compatível com LGPD/GDPR"
+  }
+}

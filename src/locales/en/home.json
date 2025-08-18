@@ -1,0 +1,48 @@
+{
+  "hero": {
+    "badge": "🚀 AI Playground Now Live",
+    "title": "Transform Your Business with",
+    "titleHighlight": "AI Automation",
+    "description": "Experience the future of automation, chatbots, and data analysis. Test our AI tools with 500 free tokens and discover how AI can revolutionize your workflow.",
+    "stats": {
+      "freeTokens": "500+",
+      "freeTokensLabel": "Free Tokens",
+      "experts": "4",
+      "expertsLabel": "AI Experts",
+      "availability": "24/7",
+      "availabilityLabel": "Availability",
+      "responseTime": "< 2s",
+      "responseTimeLabel": "Response Time"
+    }
+  },
+  "features": {
+    "badge": "AI Playground",
+    "title": "Powerful AI Tools at Your",
+    "titleHighlight": "Fingertips",
+    "description": "Explore our comprehensive suite of AI-powered tools designed to streamline your business operations and boost productivity.",
+    "aiAssistants": {
+      "title": "AI Assistants",
+      "description": "Chat with specialized AI experts like Alex Hormozi, Jordan Peterson, and more.",
+      "badge": "4 Experts"
+    },
+    "whatsapp": {
+      "title": "WhatsApp Integration",
+      "description": "Send messages and audio directly to WhatsApp with our powerful automation.",
+      "badge": "New"
+    },
+    "phoneCalls": {
+      "title": "Phone Calls",
+      "description": "Test our AI voice capabilities with automated phone call demonstrations.",
+      "badge": "Beta"
+    },
+    "tts": {
+      "title": "Text to Speech",
+      "description": "Convert text to natural-sounding speech with multiple voice options.",
+      "badge": "Multi-Voice"
+    }
+  },
+  "cta": {
+    "title": "Ready to Transform Your Business?",
+    "description": "Join thousands of businesses already using AI to automate workflows, improve customer service, and drive growth."
+  }
+}

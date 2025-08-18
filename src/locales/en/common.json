@@ -1,0 +1,51 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "playground": "AI Playground",
+    "blog": "Blog",
+    "contact": "Contact",
+    "dashboard": "Dashboard",
+    "login": "Sign In",
+    "register": "Get Started",
+    "logout": "Log out"
+  },
+  "buttons": {
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "tryFree": "Try Free",
+    "contactSales": "Contact Sales",
+    "startTrial": "Start Free Trial",
+    "tryAllTools": "Try All Tools Free",
+    "rechargeNow": "Recharge Now"
+  },
+  "tokens": {
+    "balance": "tokens",
+    "lowBalance": "Low on tokens?",
+    "free": "Free Tokens"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "new": "New",
+    "hot": "Hot",
+    "beta": "Beta"
+  },
+  "footer": {
+    "company": "Workfusion.pro",
+    "tagline": "Transforming businesses with cutting-edge AI solutions. Experience the future of automation, communication, and data analysis.",
+    "contact": "Contact Us",
+    "quickLinks": "Quick Links",
+    "legal": "Legal",
+    "madeWith": "Made with",
+    "byTeam": "by Workfusion Team",
+    "allRights": "All rights reserved.",
+    "compliance": "LGPD/GDPR Compliant"
+  }
+}

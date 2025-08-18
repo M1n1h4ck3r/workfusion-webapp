@@ -1,0 +1,56 @@
+{
+  "title": "Playground de IA",
+  "description": "Teste nossas ferramentas de IA e veja a mágica acontecer",
+  "assistants": {
+    "title": "Assistentes de IA",
+    "alex": {
+      "name": "Alex Hormozi",
+      "role": "Estrategista de Negócios",
+      "description": "Receba conselhos diretos e práticos de negócios do mestre em ofertas e criação de valor."
+    },
+    "jordan": {
+      "name": "Jordan Peterson",
+      "role": "Coach de Desenvolvimento Pessoal",
+      "description": "Receba insights reflexivos sobre desenvolvimento pessoal e filosofia de vida."
+    },
+    "daedalus": {
+      "name": "Daedalus",
+      "role": "Especialista em Engenharia Civil",
+      "description": "Conselhos técnicos profissionais sobre construção, materiais e engenharia."
+    },
+    "sensei": {
+      "name": "Sensei Suki Harada",
+      "role": "Especialista em Produtividade",
+      "description": "Misture filosofia oriental com técnicas modernas de produtividade para melhor gestão do tempo."
+    }
+  },
+  "tools": {
+    "whatsapp": {
+      "title": "Mensageiro WhatsApp",
+      "description": "Envie mensagens de texto e áudio diretamente para o WhatsApp"
+    },
+    "phone": {
+      "title": "Teste de Ligação",
+      "description": "Experimente nossas capacidades de voz IA com uma ligação ao vivo"
+    },
+    "tts": {
+      "title": "Texto para Fala",
+      "description": "Converta seu texto em fala com som natural"
+    },
+    "qr": {
+      "title": "Scanner QR WhatsApp",
+      "description": "Conecte seu WhatsApp Web para automação"
+    }
+  },
+  "interface": {
+    "selectTool": "Selecione uma ferramenta para começar",
+    "tokenCost": "Custo em tokens:",
+    "yourMessage": "Sua mensagem...",
+    "send": "Enviar",
+    "processing": "Processando...",
+    "tryAgain": "Tentar Novamente",
+    "newConversation": "Nova Conversa",
+    "saveConversation": "Salvar Conversa",
+    "exportChat": "Exportar Chat"
+  }
+}

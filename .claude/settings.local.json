@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(cp:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(touch:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(move header.tsx Header.tsx)",
+      "Bash(move footer.tsx Footer.tsx)",
+      "Bash(mv:*)",
+      "Bash(npx tsc:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
