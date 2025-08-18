@@ -20,6 +20,9 @@
       "Bash(git tag:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "C:\\c\\Users\\minei\\Documents"
+    ]
   }
 }

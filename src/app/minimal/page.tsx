@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function MinimalPage() {
   return (
     <div style={{ 
@@ -30,13 +32,13 @@ export default function MinimalPage() {
         </p>
       </div>
       <div style={{ marginTop: '2rem' }}>
-        <a href="/" style={{ 
+        <Link href="/" style={{ 
           color: '#4ADE80',
           textDecoration: 'underline',
           fontSize: '1.2rem'
         }}>
           Go to Main Page →
-        </a>
+        </Link>
       </div>
     </div>
   )

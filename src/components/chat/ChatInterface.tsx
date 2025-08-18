@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/ui/loading'
 import { 
   Send, Copy, RefreshCw, User, Bot, Zap, 
-  AlertCircle, History
+  AlertCircle, History, Mic, MicOff, Download,
+  Heart, ThumbsUp, ThumbsDown, Star
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTokenStore } from '@/store/token-store'
@@ -31,6 +32,8 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { balance, useTokens, calculateTokenCost } = useTokenStore()
   const { 
@@ -193,6 +196,70 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
     setShowHistory(false)
   }
 
+  const handleVoiceInput = async () => {
+    if (isRecording) {
+      // Stop recording
+      if (mediaRecorder) {
+        mediaRecorder.stop()
+        setIsRecording(false)
+      }
+      return
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      const chunks: Blob[] = []
+
+      recorder.ondataavailable = (e) => chunks.push(e.data)
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/wav' })
+        
+        // In a real implementation, you would send this to a speech-to-text service
+        // For demo, we'll just add a placeholder
+        const demoText = "Voice input detected! (In production, this would be transcribed speech)"
+        setInput(demoText)
+        toast.success('Voice input recorded')
+        
+        // Clean up
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      setMediaRecorder(recorder)
+      recorder.start()
+      setIsRecording(true)
+      toast.info('Recording... Click again to stop')
+    } catch (error) {
+      console.error('Voice input error:', error)
+      toast.error('Failed to access microphone')
+    }
+  }
+
+  const handleMessageReaction = async (messageIndex: number, reaction: string) => {
+    // In a real implementation, save reactions to the chat store
+    toast.success(`Reacted with ${reaction}`)
+  }
+
+  const handleExportChat = () => {
+    const chatData = {
+      personality: personalityData.name,
+      messages: messages,
+      timestamp: new Date().toISOString()
+    }
+    
+    const dataStr = JSON.stringify(chatData, null, 2)
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
+    
+    const exportFileDefaultName = `chat-${personalityData.name.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`
+    
+    const linkElement = document.createElement('a')
+    linkElement.setAttribute('href', dataUri)
+    linkElement.setAttribute('download', exportFileDefaultName)
+    linkElement.click()
+    
+    toast.success('Chat exported successfully')
+  }
+
   return (
     <div className="flex h-full">
       {/* Chat History Sidebar */}
@@ -228,6 +295,15 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
                 className="text-white/60 hover:text-white hover:bg-white/10"
               >
                 <History className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={handleExportChat}
+                variant="ghost"
+                size="sm"
+                className="text-white/60 hover:text-white hover:bg-white/10"
+                title="Export chat"
+              >
+                <Download className="h-4 w-4" />
               </Button>
               <div className="text-3xl">{personalityData.avatar}</div>
               <div>
@@ -278,7 +354,12 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
-                            code({ className, children, ...props }: any) {
+                            code({ className, children, ...props }: { 
+                              className?: string; 
+                              children: React.ReactNode; 
+                              inline?: boolean;
+                              [key: string]: unknown;
+                            }) {
                               const inline = props.inline as boolean
                               const match = /language-(\w+)/.exec(className || '')
                               return !inline && match ? (
@@ -322,7 +403,7 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
                 </div>
 
                 {/* Message Actions */}
-                {message.role === 'assistant' && index === messages.length - 1 && !isTyping && (
+                {message.role === 'assistant' && (
                   <div className="flex items-center space-x-2 mt-2 ml-10">
                     <button
                       onClick={() => handleCopy(message.content)}
@@ -331,13 +412,39 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
                     >
                       <Copy className="h-4 w-4 text-white/60" />
                     </button>
-                    <button
-                      onClick={handleRegenerate}
-                      className="p-1 glass rounded hover:bg-white/20 transition-colors"
-                      title="Regenerate response"
-                    >
-                      <RefreshCw className="h-4 w-4 text-white/60" />
-                    </button>
+                    {index === messages.length - 1 && !isTyping && (
+                      <button
+                        onClick={handleRegenerate}
+                        className="p-1 glass rounded hover:bg-white/20 transition-colors"
+                        title="Regenerate response"
+                      >
+                        <RefreshCw className="h-4 w-4 text-white/60" />
+                      </button>
+                    )}
+                    {/* Message Reactions */}
+                    <div className="flex items-center space-x-1 ml-2">
+                      <button
+                        onClick={() => handleMessageReaction(index, '👍')}
+                        className="p-1 glass rounded hover:bg-white/20 transition-colors"
+                        title="Like"
+                      >
+                        <ThumbsUp className="h-3 w-3 text-white/60" />
+                      </button>
+                      <button
+                        onClick={() => handleMessageReaction(index, '❤️')}
+                        className="p-1 glass rounded hover:bg-white/20 transition-colors"
+                        title="Love"
+                      >
+                        <Heart className="h-3 w-3 text-white/60" />
+                      </button>
+                      <button
+                        onClick={() => handleMessageReaction(index, '⭐')}
+                        className="p-1 glass rounded hover:bg-white/20 transition-colors"
+                        title="Star"
+                      >
+                        <Star className="h-3 w-3 text-white/60" />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -393,6 +500,19 @@ export function ChatInterface({ personality, onTokenUse }: ChatInterfaceProps) {
               className="input-glass flex-1"
               disabled={isLoading}
             />
+            <Button
+              onClick={handleVoiceInput}
+              variant="outline"
+              size="sm"
+              className={`glass border-white/20 hover:bg-white/10 ${isRecording ? 'bg-red-500/20 border-red-500/50' : ''}`}
+              title={isRecording ? 'Stop recording' : 'Voice input'}
+            >
+              {isRecording ? (
+                <MicOff className="h-4 w-4 text-red-400" />
+              ) : (
+                <Mic className="h-4 w-4 text-white/60" />
+              )}
+            </Button>
             <Button
               onClick={handleSend}
               disabled={isLoading || !input.trim() || balance < 2}
