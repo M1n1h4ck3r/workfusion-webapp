@@ -7,6 +7,21 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/dashboard'
 
+  // Check if Supabase is configured
+  const isSupabaseConfigured = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    return url && 
+           url !== 'your_supabase_url_here' && 
+           url !== 'https://placeholder.supabase.co' &&
+           !url.includes('placeholder')
+  }
+
+  // Demo mode - just redirect to dashboard
+  if (!isSupabaseConfigured()) {
+    console.log('Demo mode: OAuth callback redirecting to dashboard')
+    return NextResponse.redirect(`${origin}/dashboard`)
+  }
+
   if (code) {
     try {
       // Exchange the code for a session

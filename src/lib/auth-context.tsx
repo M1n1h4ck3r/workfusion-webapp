@@ -33,10 +33,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // Check if Supabase is configured
+  const isSupabaseConfigured = () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    return url && 
+           url !== 'your_supabase_url_here' && 
+           url !== 'https://placeholder.supabase.co' &&
+           !url.includes('placeholder')
+  }
+
   // Check for existing session on mount
   useEffect(() => {
     // Skip auth if Supabase is not configured
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'your_supabase_url_here') {
+    if (!isSupabaseConfigured()) {
       setLoading(false)
       return
     }
@@ -88,6 +97,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signIn = async (email: string, password: string) => {
+    // Demo mode if Supabase is not configured
+    if (!isSupabaseConfigured()) {
+      // Basic email validation for demo
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address')
+      }
+      
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters')
+      }
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Create demo user
+      const demoUser: User = {
+        id: 'demo-user-' + Date.now(),
+        email: email,
+        name: 'Demo User',
+        avatar: `https://ui-avatars.com/api/?name=Demo+User&background=4ADE80&color=fff`,
+        tokens: 500,
+        role: 'user',
+        createdAt: new Date().toISOString()
+      }
+      
+      setUser(demoUser)
+      router.push('/dashboard')
+      return
+    }
+
+    // Real Supabase authentication
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -100,6 +141,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, name: string) => {
+    // Demo mode if Supabase is not configured
+    if (!isSupabaseConfigured()) {
+      // Basic validation for demo
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        throw new Error('Please enter a valid email address')
+      }
+      
+      if (password.length < 6) {
+        throw new Error('Password must be at least 6 characters')
+      }
+      
+      if (!name.trim()) {
+        throw new Error('Name is required')
+      }
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Create demo user
+      const demoUser: User = {
+        id: 'demo-user-' + Date.now(),
+        email: email,
+        name: name,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4ADE80&color=fff`,
+        tokens: 500,
+        role: 'user',
+        createdAt: new Date().toISOString()
+      }
+      
+      setUser(demoUser)
+      router.push('/dashboard')
+      return
+    }
+
+    // Real Supabase authentication
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -128,6 +205,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithProvider = async (provider: 'google' | 'github') => {
+    // Demo mode if Supabase is not configured
+    if (!isSupabaseConfigured()) {
+      // Simulate OAuth flow for demo
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Create demo user
+      const demoUser: User = {
+        id: 'demo-user-' + Date.now(),
+        email: `demo@${provider}.com`,
+        name: `Demo ${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
+        avatar: `https://ui-avatars.com/api/?name=Demo+User&background=4ADE80&color=fff`,
+        tokens: 500,
+        role: 'user',
+        createdAt: new Date().toISOString()
+      }
+      
+      setUser(demoUser)
+      router.push('/dashboard')
+      return
+    }
+
+    // Real Supabase OAuth
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {

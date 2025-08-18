@@ -121,36 +121,13 @@ export default function RegisterPage() {
     setIsLoading(true)
     
     try {
-      // Check if provider is configured
-      if (provider === 'google' && (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'placeholder.supabase.co')) {
-        // Show setup instructions if Supabase is not configured
-        toast(
-          <div className="space-y-2">
-            <p className="font-semibold">Supabase Configuration Required</p>
-            <p className="text-sm">Please configure Supabase credentials to enable OAuth.</p>
-            <button
-              onClick={() => {
-                router.push('/auth/oauth-setup')
-                toast.dismiss()
-              }}
-              className="px-3 py-1 bg-primary-green/20 text-primary-green rounded hover:bg-primary-green/30 transition-colors text-sm"
-            >
-              View Setup Guide
-            </button>
-          </div>,
-          { duration: 8000 }
-        )
-        setIsLoading(false)
-        return
-      }
-
-      // Use real OAuth authentication  
+      // Use OAuth authentication (handles both demo and real mode)
       await signInWithProvider(provider)
-      toast.success(`Redirecting to ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`)
+      toast.success(`Welcome! Redirecting to dashboard...`)
       
     } catch (err: any) {
       console.error(`${provider} OAuth error:`, err)
-      setError(`Failed to register with ${provider}. Please try again.`)
+      setError(err.message || `Failed to register with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
     }

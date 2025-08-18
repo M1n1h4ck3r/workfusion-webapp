@@ -16,7 +16,8 @@
       "Bash(move footer.tsx Footer.tsx)",
       "Bash(mv:*)",
       "Bash(npx tsc:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git tag:*)"
     ],
     "deny": [],
     "ask": []
