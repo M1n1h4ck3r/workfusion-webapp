@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { ChatInterface } from '@/components/chat/ChatInterface'
@@ -12,11 +13,12 @@ import { LoadingSpinner } from '@/components/ui/loading'
 import { 
   Bot, MessageSquare, Mic, Phone, Sparkles, 
   Download, Settings, Zap,
-  AlertCircle
+  AlertCircle, LogIn
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useTokenStore, TOKEN_COSTS } from '@/store/token-store'
 import { CHATBOT_PERSONALITIES } from '@/services/ai-service'
+import { useAuth } from '@/lib/auth-context'
 
 export default function PlaygroundPage() {
   const [selectedTool, setSelectedTool] = useState('chatbot')
@@ -25,6 +27,8 @@ export default function PlaygroundPage() {
   const [output, setOutput] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const { balance, useTokens, transactions } = useTokenStore()
+  const { user, loading } = useAuth()
+  const router = useRouter()
 
   const aiTools = [
     {
@@ -92,7 +96,24 @@ export default function PlaygroundPage() {
     }
   ]
 
+  // Check authentication before allowing AI tool usage
+  const checkAuthAndRedirect = () => {
+    if (!user) {
+      toast.error('Please log in to use AI tools', {
+        action: {
+          label: 'Login',
+          onClick: () => router.push('/auth/login')
+        }
+      })
+      router.push('/auth/login')
+      return false
+    }
+    return true
+  }
+
   const handleTextToSpeech = () => {
+    if (!checkAuthAndRedirect()) return
+    
     if (!input.trim()) {
       toast.error('Please enter some text to convert')
       return
@@ -123,6 +144,8 @@ export default function PlaygroundPage() {
   }
 
   const handleWhatsAppTest = () => {
+    if (!checkAuthAndRedirect()) return
+    
     if (!input.trim()) {
       toast.error('Please enter a message')
       return
@@ -153,6 +176,8 @@ export default function PlaygroundPage() {
   }
 
   const handleVoiceCall = () => {
+    if (!checkAuthAndRedirect()) return
+    
     const cost = TOKEN_COSTS['voice-call']
     
     if (balance < cost) {
@@ -196,18 +221,35 @@ export default function PlaygroundPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <Badge className="mb-4 bg-primary-green/20 text-primary-green border-primary-green/30">
-                <Sparkles className="mr-1 h-3 w-3" />
-                {balance} Tokens Available
-              </Badge>
+              {user ? (
+                <Badge className="mb-4 bg-primary-green/20 text-primary-green border-primary-green/30">
+                  <Sparkles className="mr-1 h-3 w-3" />
+                  {balance} Tokens Available
+                </Badge>
+              ) : (
+                <Badge className="mb-4 bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                  <LogIn className="mr-1 h-3 w-3" />
+                  Login Required to Use AI Tools
+                </Badge>
+              )}
               
               <h1 className="text-3xl md:text-5xl font-bold mb-4">
                 AI <span className="gradient-text">Playground</span>
               </h1>
               
-              <p className="text-lg text-white/80 max-w-2xl mx-auto">
+              <p className="text-lg text-white/80 max-w-2xl mx-auto mb-6">
                 Experience the power of AI with our advanced tools and chatbots
               </p>
+              
+              {!user && (
+                <Button 
+                  onClick={() => checkAuthAndRedirect()}
+                  className="btn-primary text-lg px-8 py-4"
+                >
+                  <LogIn className="mr-2 h-5 w-5" />
+                  Try Our AI Tools
+                </Button>
+              )}
             </motion.div>
           </div>
         </section>
@@ -230,12 +272,18 @@ export default function PlaygroundPage() {
                     {aiTools.map((tool) => (
                       <button
                         key={tool.id}
-                        onClick={() => setSelectedTool(tool.id)}
-                        className={`w-full glass p-3 rounded-lg transition-all text-left ${
+                        onClick={() => {
+                          if (!user) {
+                            checkAuthAndRedirect()
+                            return
+                          }
+                          setSelectedTool(tool.id)
+                        }}
+                        className={`w-full glass p-3 rounded-lg transition-all text-left relative ${
                           selectedTool === tool.id 
                             ? 'border-2 border-primary-green shadow-lg shadow-primary-green/20' 
                             : 'border border-white/10 hover:border-white/20'
-                        }`}
+                        } ${!user ? 'opacity-60 cursor-pointer' : ''}`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
@@ -257,6 +305,11 @@ export default function PlaygroundPage() {
                             {tool.cost}
                           </Badge>
                         </div>
+                        {!user && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
+                            <LogIn className="h-5 w-5 text-white/80" />
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -269,29 +322,53 @@ export default function PlaygroundPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
                 >
-                  <h3 className="text-lg font-semibold text-white mb-3">Token Balance</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-white/60">Available</span>
-                      <span className="text-2xl font-bold gradient-text">{balance}</span>
-                    </div>
-                    
-                    {balance < 50 && (
-                      <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <p className="text-xs text-yellow-400 flex items-center">
-                          <AlertCircle className="h-3 w-3 mr-1 flex-shrink-0" />
-                          Low balance! Recharge to continue using AI tools.
-                        </p>
+                  {user ? (
+                    <>
+                      <h3 className="text-lg font-semibold text-white mb-3">Token Balance</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-white/60">Available</span>
+                          <span className="text-2xl font-bold gradient-text">{balance}</span>
+                        </div>
+                        
+                        {balance < 50 && (
+                          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                            <p className="text-xs text-yellow-400 flex items-center">
+                              <AlertCircle className="h-3 w-3 mr-1 flex-shrink-0" />
+                              Low balance! Recharge to continue using AI tools.
+                            </p>
+                          </div>
+                        )}
+                        
+                        <a href="/dashboard/billing">
+                          <Button className="w-full btn-primary">
+                            <Zap className="mr-2 h-4 w-4" />
+                            Buy More Tokens
+                          </Button>
+                        </a>
                       </div>
-                    )}
-                    
-                    <a href="/dashboard/billing">
-                      <Button className="w-full btn-primary">
-                        <Zap className="mr-2 h-4 w-4" />
-                        Buy More Tokens
-                      </Button>
-                    </a>
-                  </div>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="text-lg font-semibold text-white mb-3">Get Started</h3>
+                      <div className="space-y-3">
+                        <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                          <p className="text-xs text-blue-400 flex items-center">
+                            <LogIn className="h-3 w-3 mr-1 flex-shrink-0" />
+                            Create an account to get 500 free tokens and start using AI tools!
+                          </p>
+                        </div>
+                        
+                        <Button 
+                          onClick={() => router.push('/auth/login')}
+                          className="w-full btn-primary"
+                        >
+                          <LogIn className="mr-2 h-4 w-4" />
+                          Login / Sign Up
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </motion.div>
 
                 {/* Recent Activity */}
@@ -342,12 +419,18 @@ export default function PlaygroundPage() {
                             {personas.map((persona) => (
                               <button
                                 key={persona.id}
-                                onClick={() => setSelectedPersona(persona.id)}
+                                onClick={() => {
+                                  if (!user) {
+                                    checkAuthAndRedirect()
+                                    return
+                                  }
+                                  setSelectedPersona(persona.id)
+                                }}
                                 className={`glass p-3 rounded-lg text-left transition-all ${
                                   selectedPersona === persona.id 
                                     ? 'border-primary-green border-2' 
                                     : 'border-white/10 border hover:border-white/20'
-                                }`}
+                                } ${!user ? 'opacity-60 cursor-pointer' : ''}`}
                               >
                                 <div className="flex items-center space-x-3">
                                   <div className={`w-10 h-10 bg-gradient-to-r ${persona.gradient} rounded-lg flex items-center justify-center text-2xl`}>
@@ -364,12 +447,27 @@ export default function PlaygroundPage() {
                         </div>
 
                         {/* Chat Interface */}
-                        <ChatInterface 
-                          personality={selectedPersona}
-                          onTokenUse={(amount) => {
-                            console.log(`Used ${amount} tokens`)
-                          }}
-                        />
+                        {user ? (
+                          <ChatInterface 
+                            personality={selectedPersona}
+                            onTokenUse={(amount) => {
+                              console.log(`Used ${amount} tokens`)
+                            }}
+                          />
+                        ) : (
+                          <div className="p-8 text-center">
+                            <LogIn className="h-16 w-16 text-white/20 mx-auto mb-4" />
+                            <h3 className="text-xl font-semibold text-white mb-2">Login Required</h3>
+                            <p className="text-white/60 mb-6">Please log in to chat with AI personalities</p>
+                            <Button 
+                              onClick={() => router.push('/auth/login')}
+                              className="btn-primary"
+                            >
+                              <LogIn className="mr-2 h-4 w-4" />
+                              Login to Chat
+                            </Button>
+                          </div>
+                        )}
                       </motion.div>
                     )}
 
@@ -436,13 +534,18 @@ export default function PlaygroundPage() {
                           
                           <Button
                             onClick={handleTextToSpeech}
-                            disabled={isProcessing || !input.trim() || balance < Math.ceil(input.length / 100)}
+                            disabled={!user || isProcessing || !input.trim() || balance < Math.ceil(input.length / 100)}
                             className="w-full btn-primary"
                           >
                             {isProcessing ? (
                               <>
                                 <LoadingSpinner size="sm" className="mr-2" />
                                 Generating Speech...
+                              </>
+                            ) : !user ? (
+                              <>
+                                <LogIn className="mr-2 h-4 w-4" />
+                                Login to Generate Speech
                               </>
                             ) : (
                               <>
@@ -511,13 +614,18 @@ export default function PlaygroundPage() {
                           
                           <Button
                             onClick={handleWhatsAppTest}
-                            disabled={isProcessing || !input.trim() || balance < TOKEN_COSTS.whatsapp}
+                            disabled={!user || isProcessing || !input.trim() || balance < TOKEN_COSTS.whatsapp}
                             className="w-full btn-primary"
                           >
                             {isProcessing ? (
                               <>
                                 <LoadingSpinner size="sm" className="mr-2" />
                                 Processing...
+                              </>
+                            ) : !user ? (
+                              <>
+                                <LogIn className="mr-2 h-4 w-4" />
+                                Login to Send Message
                               </>
                             ) : (
                               <>
@@ -579,13 +687,18 @@ export default function PlaygroundPage() {
                             
                             <Button
                               onClick={handleVoiceCall}
-                              disabled={isProcessing || balance < TOKEN_COSTS['voice-call']}
+                              disabled={!user || isProcessing || balance < TOKEN_COSTS['voice-call']}
                               className="w-full btn-primary"
                             >
                               {isProcessing ? (
                                 <>
                                   <LoadingSpinner size="sm" className="mr-2" />
                                   Initiating Call...
+                                </>
+                              ) : !user ? (
+                                <>
+                                  <LogIn className="mr-2 h-4 w-4" />
+                                  Login to Start Call
                                 </>
                               ) : (
                                 <>
