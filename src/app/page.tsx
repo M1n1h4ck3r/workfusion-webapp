@@ -33,16 +33,15 @@ export default function Home() {
       {/* Hero Section */}
       <main className="flex-1 pt-16">
         <section className="relative min-h-screen py-20 px-4 sm:px-6 lg:px-8 overflow-hidden flex items-center">
-          {/* Animated Background */}
-          <GradientBackground />
-          <FloatingParticles />
+          {/* Clean Background */}
+          <div className="absolute inset-0 mesh-gradient" />
 
           <div className="container mx-auto text-center relative z-10">
             {/* Animated Logo */}
             <LogoAnimation />
             
-            <Badge className="mb-6 bg-primary-green/20 text-primary-green border-primary-green/30 animate-pulse">
-              🚀 AI Playground Now Live
+            <Badge className="mb-6 bg-blue-500/10 text-blue-400 border-blue-500/30">
+              🚀 AI Platform Now Live
             </Badge>
             
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -60,86 +59,24 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
-              <Link href="/playground" className="group">
-                <motion.div
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="relative"
+              <Link href="/playground">
+                <Button 
+                  size="lg" 
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4 rounded-lg transition-all duration-200 hover:scale-105"
                 >
-                  {/* Glowing background effect */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-primary rounded-lg blur-xl opacity-60"
-                    animate={{
-                      scale: [1, 1.1, 1],
-                      opacity: [0.5, 0.8, 0.5],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  />
-                  
-                  <Button 
-                    size="lg" 
-                    className="relative btn-primary text-lg px-8 py-4 group overflow-hidden"
-                  >
-                    {/* Animated background shine */}
-                    <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                      animate={{
-                        x: ['-100%', '100%'],
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        repeatDelay: 3,
-                        ease: "easeInOut",
-                      }}
-                    />
-                    
-                    <span className="relative z-10 flex items-center">
-                      Start Free Trial
-                      <motion.div
-                        className="ml-2"
-                        animate={{ x: [0, 5, 0] }}
-                        transition={{
-                          duration: 1.5,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                      >
-                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                      </motion.div>
-                    </span>
-                  </Button>
-                </motion.div>
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               </Link>
               
-              <Link href="/services" className="group">
-                <motion.div
-                  whileHover={{ scale: 1.02, y: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="relative"
+              <Link href="/services">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="bg-slate-800 text-white border-slate-600 hover:bg-slate-700 text-lg px-8 py-4 rounded-lg transition-colors"
                 >
-                  {/* Subtle glow for secondary button */}
-                  <motion.div
-                    className="absolute inset-0 bg-white/10 rounded-lg blur-lg opacity-30"
-                    whileHover={{
-                      scale: 1.05,
-                      opacity: 0.5,
-                    }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  
-                  <Button 
-                    size="lg" 
-                    variant="outline" 
-                    className="relative text-lg px-8 py-4 glass text-white border-white/30 hover:bg-white/15 hover:border-white/50 transition-all duration-300"
-                  >
-                    <span className="relative z-10">Learn More</span>
-                  </Button>
-                </motion.div>
+                  Learn More
+                </Button>
               </Link>
             </div>
 
@@ -147,10 +84,10 @@ export default function Home() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-2xl mx-auto">
               {stats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="text-2xl md:text-3xl font-bold gradient-text">
+                  <div className="text-2xl md:text-3xl font-bold text-blue-400">
                     {stat.number}
                   </div>
-                  <div className="text-white/80 text-sm">
+                  <div className="text-slate-400 text-sm">
                     {stat.label}
                   </div>
                 </div>
@@ -195,7 +132,7 @@ export default function Home() {
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button size="lg" variant="outline" className="glass text-white border-white/20 hover:bg-white/10 text-lg px-8 py-4">
+                  <Button size="lg" variant="outline" className="btn-secondary text-lg px-8 py-4">
                     Contact Sales
                   </Button>
                 </Link>

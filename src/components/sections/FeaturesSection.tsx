@@ -126,7 +126,7 @@ export function FeaturesSection() {
     <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-green/10 via-primary-yellow/10 to-primary-orange/10" />
+        <div className="absolute inset-0 mesh-gradient" />
       </div>
 
       <div className="container mx-auto relative z-10">
@@ -138,7 +138,7 @@ export function FeaturesSection() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <Badge className="mb-4 bg-primary-green/20 text-primary-green border-primary-green/30">
+          <Badge className="mb-4 bg-blue-500/20 text-blue-400 border-blue-500/30">
             📊 Performance Metrics
           </Badge>
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -164,7 +164,7 @@ export function FeaturesSection() {
               whileHover={{ scale: 1.02 }}
             >
               <motion.div 
-                className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4"
+                className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
@@ -183,7 +183,7 @@ export function FeaturesSection() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-white/90 text-xs">{feature.label}</span>
-                  <span className="text-primary-green font-semibold text-sm">{feature.metric}</span>
+                  <span className="text-emerald-400 font-semibold text-sm">{feature.metric}</span>
                 </div>
                 <motion.div
                   initial={{ width: 0 }}
@@ -229,7 +229,7 @@ export function FeaturesSection() {
                 viewport={{ once: true }}
               >
                 <motion.div 
-                  className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+                  className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
@@ -280,7 +280,7 @@ export function FeaturesSection() {
               viewport={{ once: true }}
             >
               <motion.div 
-                className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4"
+                className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >

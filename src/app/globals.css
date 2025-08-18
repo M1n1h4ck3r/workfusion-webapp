@@ -3,15 +3,20 @@
 @tailwind utilities;
 
 :root {
-  /* Workfusion.pro Custom Properties */
-  --primary-green: #4ADE80;
-  --primary-yellow: #FCD34D;
-  --primary-orange: #FB923C;
-  --gradient-primary: linear-gradient(135deg, #4ADE80 0%, #FCD34D 50%, #FB923C 100%);
-  --dark-bg: #0A0A0A;
-  --dark-secondary: #1A1A1A;
-  --text-primary: #FFFFFF;
-  --text-secondary: #B8B8B8; /* Improved from #A0A0A0 for better contrast */
+  /* Clean Modern Design System */
+  --primary: #2563EB;        /* Clean blue primary */
+  --primary-hover: #1D4ED8;  /* Darker blue for hover */
+  --secondary: #64748B;      /* Neutral slate */
+  --accent: #10B981;         /* Emerald accent */
+  --background: #0F172A;     /* Deep slate background */
+  --surface: #1E293B;       /* Elevated surface */
+  --surface-hover: #334155;  /* Surface hover state */
+  --border: #334155;         /* Subtle borders */
+  --text-primary: #F8FAFC;   /* High contrast text */
+  --text-secondary: #CBD5E1; /* Medium contrast text */
+  --text-muted: #94A3B8;     /* Muted text */
+  --gradient-primary: linear-gradient(135deg, #2563EB 0%, #10B981 100%);
+  --gradient-subtle: linear-gradient(135deg, #1E293B 0%, #334155 100%);
   
   /* Shadcn UI Variables */
   --radius: 0.625rem;
@@ -72,29 +77,84 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   
   html {
     @apply dark;
   }
+  
+  body {
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Improve text rendering */
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  
+  p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+  
+  /* Clean scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
 }
 
 @layer components {
-  /* Glassmorphism Effects - Improved contrast */
+  /* Clean Card Designs */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .card-hover {
+    @apply card;
+  }
+  
+  .card-hover:hover {
+    background: var(--surface-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+  
   .glass {
-    background: rgba(26, 26, 26, 0.8); /* Darker background for better text contrast */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: 12px;
   }
   
   .glass-strong {
-    background: rgba(26, 26, 26, 0.9); /* Even darker for important content */
+    background: rgba(30, 41, 59, 0.95);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    border-radius: 12px;
   }
   
   /* Gradient Text */
@@ -174,30 +234,63 @@
     text-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
   }
   
-  /* Button Variants */
+  /* Modern Button Styles */
   .btn-primary {
-    @apply bg-gradient-primary text-white font-semibold py-3 px-6 rounded-lg;
-    @apply transition-all duration-300 hover:shadow-lg active:scale-95;
+    background: var(--primary);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
   }
   
   .btn-primary:hover {
-    box-shadow: 0 10px 15px -3px rgba(74, 222, 128, 0.3), 0 4px 6px -2px rgba(74, 222, 128, 0.2);
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
   }
   
-  .btn-glass {
-    @apply glass text-white font-semibold py-3 px-6 rounded-lg;
-    @apply transition-all duration-300 hover:bg-white/20;
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
   }
   
-  /* Form Elements */
+  .btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: var(--primary);
+  }
+  
+  /* Clean Form Elements */
+  .input-clean {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .input-clean:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  
+  .input-clean::placeholder {
+    color: var(--text-muted);
+  }
+  
+  /* Legacy compatibility */
   .input-glass {
-    @apply glass placeholder:text-white/60 text-white;
-    @apply focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent;
-  }
-  
-  .input-glass:focus {
-    --tw-ring-color: rgba(74, 222, 128, 0.5);
-    border-color: rgba(74, 222, 128, 0.5);
+    @apply input-clean;
   }
 }
 
@@ -240,12 +333,20 @@
     animation-delay: 500ms;
   }
   
-  /* Custom Mesh Gradient */
+  /* Clean Background Gradients */
   .mesh-gradient {
-    background: radial-gradient(circle at 20% 80%, #4ADE80 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, #FCD34D 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, #FB923C 0%, transparent 50%),
-                #0A0A0A;
+    background: radial-gradient(circle at 20% 80%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+                var(--background);
+  }
+  
+  .gradient-bg {
+    background: linear-gradient(135deg, var(--background) 0%, var(--surface) 100%);
+  }
+  
+  .subtle-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0);
+    background-size: 20px 20px;
   }
   
   /* Perspective for 3D effects */

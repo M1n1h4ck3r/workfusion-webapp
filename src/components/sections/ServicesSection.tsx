@@ -83,7 +83,7 @@ export function ServicesSection() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <Badge className="mb-4 bg-primary-yellow/20 text-primary-yellow border-primary-yellow/30">
+          <Badge className="mb-4 bg-blue-500/20 text-blue-400 border-blue-500/30">
             🚀 AI Services
           </Badge>
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -112,11 +112,11 @@ export function ServicesSection() {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-4">
                   <motion.div 
-                    className={`w-12 h-12 bg-gradient-to-r ${
-                      service.color === 'green' ? 'from-green-400 to-emerald-500' :
-                      service.color === 'yellow' ? 'from-yellow-400 to-orange-500' :
-                      'from-orange-400 to-red-500'
-                    } rounded-xl flex items-center justify-center shadow-lg`}
+                    className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg ${
+                      service.color === 'green' ? 'bg-emerald-600' :
+                      service.color === 'yellow' ? 'bg-blue-600' :
+                      'bg-slate-600'
+                    }`}
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
@@ -125,9 +125,9 @@ export function ServicesSection() {
                   <Badge 
                     variant="secondary" 
                     className={`text-xs ${
-                      service.color === 'green' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                      service.color === 'yellow' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' :
-                      'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                      service.color === 'green' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
+                      service.color === 'yellow' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
+                      'bg-slate-500/20 text-slate-400 border-slate-500/30'
                     }`}
                   >
                     {service.badge}
@@ -146,7 +146,7 @@ export function ServicesSection() {
                 <ul className="space-y-2 mb-6">
                   {service.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-center text-sm text-white/80">
-                      <div className="w-1.5 h-1.5 bg-primary-green rounded-full mr-2" />
+                      <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-2" />
                       {feature}
                     </li>
                   ))}
@@ -195,7 +195,7 @@ export function ServicesSection() {
                 viewport={{ once: true }}
               >
                 <motion.div 
-                  className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
+                  className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >

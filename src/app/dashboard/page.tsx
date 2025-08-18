@@ -70,7 +70,7 @@ export default function DashboardPage() {
         </div>
         
         <Link href="/dashboard/billing">
-          <Button className="btn-primary mt-4 sm:mt-0">
+          <Button className="btn-primary">
             <Plus className="mr-2 h-4 w-4" />
             Add Tokens
           </Button>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.1 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <Badge className={`${stats.tokens.trend >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
@@ -113,7 +113,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.2 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center">
               <Activity className="h-6 w-6 text-white" />
             </div>
             <Badge className="bg-green-500/20 text-green-400">
@@ -137,7 +137,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.3 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-700 rounded-xl flex items-center justify-center">
               <TrendingUp className="h-6 w-6 text-white" />
             </div>
             <span className="text-white/60 text-xs">This Week</span>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
           transition={{ delay: 0.4 }}
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-slate-600 rounded-xl flex items-center justify-center">
               <Clock className="h-6 w-6 text-white" />
             </div>
             <span className="text-white/60 text-xs">This Month</span>
@@ -191,11 +191,11 @@ export default function DashboardPage() {
               <div key={index} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 bg-gradient-to-r ${
-                      tool.color === 'green' ? 'from-green-400 to-emerald-500' :
-                      tool.color === 'yellow' ? 'from-yellow-400 to-orange-500' :
-                      'from-orange-400 to-red-500'
-                    } rounded-lg flex items-center justify-center`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                      tool.color === 'green' ? 'bg-emerald-600' :
+                      tool.color === 'yellow' ? 'bg-blue-600' :
+                      'bg-slate-600'
+                    }`}>
                       <tool.icon className="h-5 w-5 text-white" />
                     </div>
                     <span className="text-white/90">{tool.name}</span>
@@ -211,7 +211,7 @@ export default function DashboardPage() {
           </div>
 
           <Link href="/dashboard/analytics">
-            <Button variant="ghost" className="w-full mt-6 text-white/80 hover:text-white hover:bg-white/10">
+            <Button variant="ghost" className="w-full mt-6 text-slate-300 hover:text-white hover:bg-slate-700/50">
               View Detailed Analytics
               <ArrowUpRight className="ml-2 h-4 w-4" />
             </Button>
@@ -228,7 +228,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-white">Recent Activity</h2>
             <Link href="/dashboard/history">
-              <Button variant="ghost" size="sm" className="text-white/80 hover:text-white">
+              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-slate-700/50">
                 View All
                 <ArrowUpRight className="ml-1 h-3 w-3" />
               </Button>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
               >
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
-                    <Badge variant="secondary" className="bg-primary-green/20 text-primary-green text-xs">
+                    <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs">
                       {activity.tool}
                     </Badge>
                     <span className="text-white/90 text-sm">{activity.action}</span>
@@ -251,7 +251,7 @@ export default function DashboardPage() {
                   <span className="text-white/60 text-xs">{activity.time}</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <Zap className="h-3 w-3 text-primary-yellow" />
+                  <Zap className="h-3 w-3 text-emerald-400" />
                   <span className="text-white/80 text-sm font-medium">{activity.tokens}</span>
                 </div>
               </div>
@@ -271,28 +271,28 @@ export default function DashboardPage() {
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link href="/dashboard/playground">
-            <Button variant="outline" className="w-full h-24 flex-col space-y-2 glass text-white border-white/20 hover:bg-white/10">
+            <Button variant="outline" className="w-full h-24 flex-col space-y-2 bg-slate-800 text-white border-slate-600 hover:bg-slate-700 transition-colors">
               <Bot className="h-6 w-6" />
               <span>AI Chatbot</span>
             </Button>
           </Link>
           
           <Link href="/dashboard/whatsapp">
-            <Button variant="outline" className="w-full h-24 flex-col space-y-2 glass text-white border-white/20 hover:bg-white/10">
+            <Button variant="outline" className="w-full h-24 flex-col space-y-2 bg-slate-800 text-white border-slate-600 hover:bg-slate-700 transition-colors">
               <MessageSquare className="h-6 w-6" />
               <span>WhatsApp</span>
             </Button>
           </Link>
           
           <Link href="/dashboard/tts">
-            <Button variant="outline" className="w-full h-24 flex-col space-y-2 glass text-white border-white/20 hover:bg-white/10">
+            <Button variant="outline" className="w-full h-24 flex-col space-y-2 bg-slate-800 text-white border-slate-600 hover:bg-slate-700 transition-colors">
               <Mic className="h-6 w-6" />
               <span>Text to Speech</span>
             </Button>
           </Link>
           
           <Link href="/dashboard/billing">
-            <Button variant="outline" className="w-full h-24 flex-col space-y-2 glass text-white border-white/20 hover:bg-white/10">
+            <Button variant="outline" className="w-full h-24 flex-col space-y-2 bg-slate-800 text-white border-slate-600 hover:bg-slate-700 transition-colors">
               <CreditCard className="h-6 w-6" />
               <span>Add Tokens</span>
             </Button>

@@ -32,7 +32,7 @@ export function Header() {
   ]
 
   return (
-    <header className="fixed top-0 w-full z-50 glass border-b border-white/10">
+    <header className="fixed top-0 w-full z-50 backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -48,7 +48,7 @@ export function Header() {
                   priority
                 />
               </div>
-              <span className="text-xl font-bold gradient-text">Workfusion</span>
+              <span className="text-xl font-bold text-white">WorkFusion</span>
             </Link>
           </div>
 
@@ -70,7 +70,7 @@ export function Header() {
             {user ? (
               <>
                 {/* Token Balance */}
-                <Badge variant="secondary" className="bg-primary-green/20 text-primary-green border-primary-green/30">
+                <Badge variant="secondary" className="bg-blue-500/10 text-blue-400 border-blue-500/30">
                   {balance} tokens
                 </Badge>
                 
@@ -84,7 +84,7 @@ export function Header() {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 glass border-white/20" align="end" forceMount>
+                  <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700" align="end" forceMount>
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
                         <p className="font-medium text-white">{user.name}</p>
@@ -131,7 +131,7 @@ export function Header() {
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button className="btn-primary">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
                     Get Started
                   </Button>
                 </Link>
@@ -152,7 +152,7 @@ export function Header() {
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-dark-bg/90 backdrop-blur-md rounded-lg mt-2">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-800/95 backdrop-blur-md rounded-lg mt-2">
               {navigation.map((item) => (
                 <Link
                   key={item.name}

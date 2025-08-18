@@ -660,8 +660,6 @@ export default function AnalyticsPage() {
               </div>
             </div>
           </motion.div>
-        </div>
-      )}
 
           {/* Recent Activity */}
           <motion.div
