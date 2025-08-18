@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/ui/loading'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { useAuth } from '@/lib/auth-context'
 import { 
   Mail, 
   Lock, 
@@ -34,6 +35,7 @@ interface PasswordStrength {
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { signUp, signInWithProvider, loading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -94,20 +96,21 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      // Demo registration - accepts any valid data for testing
+      // Basic validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(formData.email)) {
+        setError('Please enter a valid email address')
+        setIsLoading(false)
+        return
+      }
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Show success message
+      // Use real Supabase authentication
+      await signUp(formData.email, formData.password, formData.name)
       toast.success('Account created successfully! Welcome to WorkFusion!')
       
-      // Redirect to dashboard on success
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 500)
-    } catch {
-      setError('Registration failed. Please try again.')
+    } catch (err: any) {
+      console.error('Registration error:', err)
+      setError(err.message || 'Registration failed. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -116,15 +119,38 @@ export default function RegisterPage() {
   const handleSocialRegister = async (provider: 'google' | 'github') => {
     setError('')
     setIsLoading(true)
-
+    
     try {
-      // TODO: Implement social authentication
-      console.log('Register with:', provider)
+      // Check if provider is configured
+      if (provider === 'google' && (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'placeholder.supabase.co')) {
+        // Show setup instructions if Supabase is not configured
+        toast(
+          <div className="space-y-2">
+            <p className="font-semibold">Supabase Configuration Required</p>
+            <p className="text-sm">Please configure Supabase credentials to enable OAuth.</p>
+            <button
+              onClick={() => {
+                router.push('/auth/oauth-setup')
+                toast.dismiss()
+              }}
+              className="px-3 py-1 bg-primary-green/20 text-primary-green rounded hover:bg-primary-green/30 transition-colors text-sm"
+            >
+              View Setup Guide
+            </button>
+          </div>,
+          { duration: 8000 }
+        )
+        setIsLoading(false)
+        return
+      }
+
+      // Use real OAuth authentication  
+      await signInWithProvider(provider)
+      toast.success(`Redirecting to ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`)
       
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      router.push('/dashboard')
-    } catch {
-      setError(`Failed to register with ${provider}`)
+    } catch (err: any) {
+      console.error(`${provider} OAuth error:`, err)
+      setError(`Failed to register with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
     }
@@ -243,7 +269,7 @@ export default function RegisterPage() {
               variant="outline"
               className="w-full glass text-white border-white/20 hover:bg-white/10"
               onClick={() => handleSocialRegister('google')}
-              disabled={isLoading}
+              disabled={isLoading || authLoading}
             >
               <Chrome className="mr-2 h-5 w-5" />
               Sign up with Google
@@ -254,7 +280,7 @@ export default function RegisterPage() {
               variant="outline"
               className="w-full glass text-white border-white/20 hover:bg-white/10"
               onClick={() => handleSocialRegister('github')}
-              disabled={isLoading}
+              disabled={isLoading || authLoading}
             >
               <Github className="mr-2 h-5 w-5" />
               Sign up with GitHub
@@ -288,7 +314,7 @@ export default function RegisterPage() {
                   className="input-glass pl-10"
                   placeholder="John Doe"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || authLoading}
                 />
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
               </div>
@@ -307,7 +333,7 @@ export default function RegisterPage() {
                   className="input-glass pl-10"
                   placeholder="you@example.com"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || authLoading}
                 />
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
               </div>
@@ -326,7 +352,7 @@ export default function RegisterPage() {
                   className="input-glass pl-10 pr-10"
                   placeholder="••••••••"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || authLoading}
                 />
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
                 <button
@@ -381,7 +407,7 @@ export default function RegisterPage() {
                   className="input-glass pl-10"
                   placeholder="••••••••"
                   required
-                  disabled={isLoading}
+                  disabled={isLoading || authLoading}
                 />
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
               </div>

@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { LoadingSpinner } from '@/components/ui/loading'
 import { motion } from 'framer-motion'
+import { useAuth } from '@/lib/auth-context'
 import { 
   Mail, 
   Lock, 
@@ -25,6 +26,7 @@ import { toast } from 'sonner'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { signIn, signInWithProvider, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -37,104 +39,70 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      // Demo login - accepts any valid email format and password for testing
-      if (email && password) {
-        // Basic email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(email)) {
-          setError('Please enter a valid email address')
-          setIsLoading(false)
-          return
-        }
-        
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500))
-        
-        // Check if first-time user
-        const termsAccepted = localStorage.getItem('termsAccepted')
-        
-        if (termsAccepted !== 'true') {
-          // First-time user - redirect to terms acceptance
-          toast.success('Welcome! Please review our terms to get started.')
-          setTimeout(() => {
-            router.push('/dashboard/first-time')
-          }, 500)
-        } else {
-          // Returning user
-          toast.success('Welcome back! Redirecting to dashboard...')
-          setTimeout(() => {
-            router.push('/dashboard')
-          }, 500)
-        }
-      } else {
+      // Basic validation
+      if (!email || !password) {
         setError('Please enter both email and password')
         setIsLoading(false)
+        return
       }
-    } catch {
-      setError('Invalid email or password')
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address')
+        setIsLoading(false)
+        return
+      }
+      
+      // Use real Supabase authentication
+      await signIn(email, password)
+      toast.success('Welcome back! Redirecting to dashboard...')
+      
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err.message || 'Invalid email or password')
+    } finally {
       setIsLoading(false)
     }
   }
 
   const handleSocialLogin = async (provider: 'google' | 'github') => {
-    // For demo purposes, show a custom toast with action button
-    toast(
-      <div className="space-y-2">
-        <p className="font-semibold">
-          {provider.charAt(0).toUpperCase() + provider.slice(1)} OAuth Setup Required
-        </p>
-        <p className="text-sm">
-          OAuth authentication needs to be configured for production use.
-        </p>
-        <div className="flex gap-2 mt-3">
-          <button
-            onClick={() => {
-              router.push('/auth/oauth-setup')
-              toast.dismiss()
-            }}
-            className="px-3 py-1 bg-primary-green/20 text-primary-green rounded hover:bg-primary-green/30 transition-colors text-sm"
-          >
-            View Setup Guide
-          </button>
-          <button
-            onClick={() => {
-              // Demo login - simulate OAuth success
-              toast.success('Demo: OAuth login simulated!')
-              
-              // Check if first-time user
-              const termsAccepted = localStorage.getItem('termsAccepted')
-              
-              if (termsAccepted !== 'true') {
-                setTimeout(() => router.push('/dashboard/first-time'), 1000)
-              } else {
-                setTimeout(() => router.push('/dashboard'), 1000)
-              }
-            }}
-            className="px-3 py-1 bg-white/10 text-white rounded hover:bg-white/20 transition-colors text-sm"
-          >
-            Try Demo
-          </button>
-        </div>
-      </div>,
-      {
-        duration: 10000
-      }
-    )
-    
-    // NOTE: To enable real OAuth login:
-    // 1. Follow the setup guide at /auth/oauth-setup
-    // 2. Uncomment the code below:
-    /*
     setError('')
     setIsLoading(true)
+    
     try {
+      // Check if provider is configured
+      if (provider === 'google' && (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL === 'placeholder.supabase.co')) {
+        // Show setup instructions if Supabase is not configured
+        toast(
+          <div className="space-y-2">
+            <p className="font-semibold">Supabase Configuration Required</p>
+            <p className="text-sm">Please configure Supabase credentials to enable OAuth.</p>
+            <button
+              onClick={() => {
+                router.push('/auth/oauth-setup')
+                toast.dismiss()
+              }}
+              className="px-3 py-1 bg-primary-green/20 text-primary-green rounded hover:bg-primary-green/30 transition-colors text-sm"
+            >
+              View Setup Guide
+            </button>
+          </div>,
+          { duration: 8000 }
+        )
+        setIsLoading(false)
+        return
+      }
+
+      // Use real OAuth authentication
       await signInWithProvider(provider)
-    } catch (err) {
-      setError(`Failed to login with ${provider}`)
+      toast.success(`Redirecting to ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`)
+      
+    } catch (err: any) {
+      console.error(`${provider} OAuth error:`, err)
+      setError(`Failed to login with ${provider}. Please try again.`)
     } finally {
       setIsLoading(false)
     }
-    */
   }
 
   return (
@@ -170,7 +138,7 @@ export default function LoginPage() {
             </p>
             <div className="mt-2 p-3 bg-primary-green/10 border border-primary-green/30 rounded-lg">
               <p className="text-sm text-primary-green">
-                🎯 Demo Mode: Use any email and password to login
+                🚀 OAuth Enabled: Use Google sign-in or create an account
               </p>
             </div>
           </div>
@@ -193,7 +161,7 @@ export default function LoginPage() {
               variant="outline"
               className="w-full glass text-white border-white/20 hover:bg-white/10"
               onClick={() => handleSocialLogin('google')}
-              disabled={isLoading}
+              disabled={isLoading || authLoading}
             >
               <Chrome className="mr-2 h-5 w-5" />
               Continue with Google
@@ -204,7 +172,7 @@ export default function LoginPage() {
               variant="outline"
               className="w-full glass text-white border-white/20 hover:bg-white/10"
               onClick={() => handleSocialLogin('github')}
-              disabled={isLoading}
+              disabled={isLoading || authLoading}
             >
               <Github className="mr-2 h-5 w-5" />
               Continue with GitHub
@@ -239,7 +207,7 @@ export default function LoginPage() {
                     className="input-glass pl-10"
                     placeholder="you@example.com"
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                   />
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
                 </div>
@@ -258,7 +226,7 @@ export default function LoginPage() {
                     className="input-glass pl-10 pr-10"
                     placeholder="••••••••"
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                   />
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
                   <button
@@ -298,7 +266,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               className="w-full btn-primary"
-              disabled={isLoading}
+              disabled={isLoading || authLoading}
             >
               {isLoading ? (
                 <>
