@@ -14,18 +14,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useAuth } from '@/lib/auth-context'
+import { useTokenStore } from '@/store/token-store'
 
-interface HeaderProps {
-  user?: {
-    name: string
-    email: string
-    avatar?: string
-    tokens: number
-  }
-}
-
-export function Header({ user }: HeaderProps) {
+export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { user, signOut, loading } = useAuth()
+  const { balance } = useTokenStore()
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -76,7 +71,7 @@ export function Header({ user }: HeaderProps) {
               <>
                 {/* Token Balance */}
                 <Badge variant="secondary" className="bg-primary-green/20 text-primary-green border-primary-green/30">
-                  {user.tokens} tokens
+                  {balance} tokens
                 </Badge>
                 
                 {/* User Menu */}
@@ -118,7 +113,10 @@ export function Header({ user }: HeaderProps) {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-white/20" />
-                    <DropdownMenuItem className="text-white hover:bg-white/10">
+                    <DropdownMenuItem 
+                      className="text-white hover:bg-white/10 cursor-pointer"
+                      onClick={signOut}
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       Log out
                     </DropdownMenuItem>
