@@ -33,9 +33,13 @@ import {
   Sparkles,
   History,
   Shield,
-  Users
+  Users,
+  GitBranch,
+  UserPlus
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
+import { CollaborationProvider } from '@/components/collaboration/CollaborationProvider'
+import { CollaborationPanel } from '@/components/collaboration/CollaborationPanel'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -43,9 +47,11 @@ const navigation = [
   { name: 'WhatsApp', href: '/dashboard/whatsapp', icon: MessageSquare },
   { name: 'Voice Calls', href: '/dashboard/calls', icon: Phone },
   { name: 'Text to Speech', href: '/dashboard/tts', icon: Mic },
+  { name: 'Workflows', href: '/dashboard/workflows', icon: GitBranch },
   { name: 'Usage History', href: '/dashboard/history', icon: History },
   { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
   { name: 'Analytics', href: '/dashboard/analytics', icon: BarChart3 },
+  { name: 'Security', href: '/dashboard/security', icon: Shield },
 ]
 
 const adminNavigation = [
@@ -76,8 +82,13 @@ export default function DashboardLayout({
   const isAdmin = mockUser.role === 'admin'
 
   return (
-    <div className="min-h-screen flex">
-      {/* Desktop Sidebar */}
+    <CollaborationProvider
+      userId={mockUser.email}
+      userName={mockUser.name}
+      sessionId={`dashboard-${pathname}`}
+    >
+      <div className="min-h-screen flex">
+        {/* Desktop Sidebar */}
       <motion.div
         className={`hidden lg:flex flex-col glass-strong border-r border-white/10 transition-all duration-300 ${
           sidebarOpen ? 'w-64' : 'w-20'
@@ -330,6 +341,10 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+      
+      {/* Collaboration Panel */}
+      <CollaborationPanel />
     </div>
+    </CollaborationProvider>
   )
 }

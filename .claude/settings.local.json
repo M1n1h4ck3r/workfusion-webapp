@@ -19,7 +19,8 @@
       "Bash(git add:*)",
       "Bash(git tag:*)",
       "Bash(git push:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(move:*)"
     ],
     "deny": [],
     "ask": [],
