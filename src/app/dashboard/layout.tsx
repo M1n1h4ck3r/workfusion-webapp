@@ -39,7 +39,8 @@ import {
   UserPlus,
   Activity,
   Package,
-  Building2
+  Building2,
+  TrendingUp
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { CollaborationProvider } from '@/components/collaboration/CollaborationProvider'
@@ -49,9 +50,9 @@ import { MonitoringInitializer } from '@/components/monitoring/MonitoringInitial
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'AI Playground', href: '/playground', icon: Bot },
-  { name: 'AI Models', href: '/dashboard/ai-models/management', icon: Brain },
+  { name: 'AI Models', href: '/dashboard/ai-models', icon: Brain },
   { name: 'AI Monitoring', href: '/dashboard/monitoring', icon: Activity },
-  { name: 'Business Intelligence', href: '/dashboard/intelligence', icon: Brain },
+  { name: 'Business Intelligence', href: '/dashboard/intelligence', icon: TrendingUp },
   { name: 'Marketplace', href: '/dashboard/marketplace', icon: Package },
   { name: 'WhatsApp', href: '/dashboard/whatsapp', icon: MessageSquare },
   { name: 'Voice Calls', href: '/dashboard/calls', icon: Phone },
