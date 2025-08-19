@@ -18,6 +18,7 @@ import { motion } from 'framer-motion'
 import {
   Home,
   Bot,
+  Brain,
   MessageSquare,
   Phone,
   Mic,
@@ -35,15 +36,23 @@ import {
   Shield,
   Users,
   GitBranch,
-  UserPlus
+  UserPlus,
+  Activity,
+  Package,
+  Building2
 } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { CollaborationProvider } from '@/components/collaboration/CollaborationProvider'
 import { CollaborationPanel } from '@/components/collaboration/CollaborationPanel'
+import { MonitoringInitializer } from '@/components/monitoring/MonitoringInitializer'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'AI Playground', href: '/playground', icon: Bot },
+  { name: 'AI Models', href: '/dashboard/ai-models/management', icon: Brain },
+  { name: 'AI Monitoring', href: '/dashboard/monitoring', icon: Activity },
+  { name: 'Business Intelligence', href: '/dashboard/intelligence', icon: Brain },
+  { name: 'Marketplace', href: '/dashboard/marketplace', icon: Package },
   { name: 'WhatsApp', href: '/dashboard/whatsapp', icon: MessageSquare },
   { name: 'Voice Calls', href: '/dashboard/calls', icon: Phone },
   { name: 'Text to Speech', href: '/dashboard/tts', icon: Mic },
@@ -55,6 +64,7 @@ const navigation = [
 ]
 
 const adminNavigation = [
+  { name: 'Tenant Management', href: '/dashboard/admin/tenants', icon: Building2 },
   { name: 'User Management', href: '/dashboard/admin/users', icon: Users },
   { name: 'AI Personas', href: '/dashboard/admin/personas', icon: Bot },
   { name: 'System Settings', href: '/dashboard/admin/settings', icon: Shield },
@@ -91,6 +101,7 @@ export default function DashboardLayout({
       userName={mockUser.name}
       sessionId={`dashboard-${pathname}`}
     >
+      <MonitoringInitializer />
       <div className="min-h-screen flex">
         {/* Desktop Sidebar */}
       <motion.div

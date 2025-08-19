@@ -78,7 +78,7 @@ export function CollaborationProvider({
     return () => {
       WebSocketManager.disconnect()
     }
-  }, [userId, sessionId, handleCollaborationEvent, handlePresenceUpdate])
+  }, [userId, sessionId])
 
   const handleCollaborationEvent = useCallback((event: CollaborationEvent) => {
     switch (event.type) {

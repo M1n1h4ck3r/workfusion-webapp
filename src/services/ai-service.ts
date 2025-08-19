@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { PersonaService } from './persona-service'
+import { aiMetricsTracker } from '@/lib/ai-metrics-tracker'
 
 // AI Service Configuration
 interface AIConfig {
@@ -130,7 +131,8 @@ class AIService {
 
   async sendMessage(
     messages: Message[],
-    personality?: keyof typeof CHATBOT_PERSONALITIES | string
+    personality?: keyof typeof CHATBOT_PERSONALITIES | string,
+    userId?: string
   ): Promise<string> {
     // Try to fetch persona from database first
     let systemPrompt: string | undefined
@@ -156,52 +158,82 @@ class AIService {
 
     // Demo mode - return simulated responses
     if (this.config.provider === 'demo') {
-      return this.getDemoResponse(messages, personality as keyof typeof CHATBOT_PERSONALITIES)
+      const modelId = this.config.model || 'demo-model'
+      const inputText = messages.map(m => m.content).join(' ')
+      
+      return await aiMetricsTracker.trackRequest(
+        modelId,
+        {
+          endpoint: '/api/chat/demo',
+          inputTokens: Math.ceil(inputText.length / 4), // Rough token estimation
+          userId,
+          userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server'
+        },
+        async () => this.getDemoResponse(messages, personality as keyof typeof CHATBOT_PERSONALITIES)
+      )
     }
 
     // OpenAI API
     if (this.config.provider === 'openai' && this.openai) {
-      try {
-        const response = await this.openai.chat.completions.create({
-          model: this.config.model || 'gpt-3.5-turbo',
-          messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
-          temperature: 0.7,
-          max_tokens: 1000,
-        })
+      const modelId = this.config.model || 'gpt-3.5-turbo'
+      const inputText = messages.map(m => m.content).join(' ')
+      
+      return await aiMetricsTracker.trackRequest(
+        modelId,
+        {
+          endpoint: '/api/chat/openai',
+          inputTokens: Math.ceil(inputText.length / 4), // Rough token estimation
+          userId,
+          userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server'
+        },
+        async () => {
+          const response = await this.openai!.chat.completions.create({
+            model: modelId,
+            messages: messages as OpenAI.Chat.Completions.ChatCompletionMessageParam[],
+            temperature: 0.7,
+            max_tokens: 1000,
+          })
 
-        return response.choices[0]?.message?.content || 'No response generated.'
-      } catch (error) {
-        console.error('OpenAI API error:', error)
-        throw new Error('Failed to get response from OpenAI')
-      }
+          return response.choices[0]?.message?.content || 'No response generated.'
+        }
+      )
     }
 
     // Anthropic Claude API
     if (this.config.provider === 'anthropic' && this.anthropic) {
-      try {
-        // Convert messages format for Claude
-        const claudeMessages = messages
-          .filter(m => m.role !== 'system')
-          .map(m => ({
-            role: m.role as 'user' | 'assistant',
-            content: m.content
-          }))
+      const modelId = this.config.model || 'claude-3-sonnet-20240229'
+      const inputText = messages.map(m => m.content).join(' ')
+      
+      return await aiMetricsTracker.trackRequest(
+        modelId,
+        {
+          endpoint: '/api/chat/anthropic',
+          inputTokens: Math.ceil(inputText.length / 4), // Rough token estimation
+          userId,
+          userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server'
+        },
+        async () => {
+          // Convert messages format for Claude
+          const claudeMessages = messages
+            .filter(m => m.role !== 'system')
+            .map(m => ({
+              role: m.role as 'user' | 'assistant',
+              content: m.content
+            }))
 
-        const systemPrompt = messages.find(m => m.role === 'system')?.content
+          const systemPrompt = messages.find(m => m.role === 'system')?.content
 
-        const response = await this.anthropic.messages.create({
-          model: this.config.model || 'claude-3-sonnet-20240229',
-          messages: claudeMessages,
-          system: systemPrompt,
-          max_tokens: 1000,
-        })
+          const response = await this.anthropic!.messages.create({
+            model: modelId,
+            messages: claudeMessages,
+            system: systemPrompt,
+            max_tokens: 1000,
+          })
 
-        const firstContent = response.content[0]
-        return (firstContent?.type === 'text' ? firstContent.text : 'No response generated.') || 'No response generated.'
-      } catch (error) {
-        console.error('Anthropic API error:', error)
-        throw new Error('Failed to get response from Claude')
-      }
+          const firstContent = response.content[0]
+          return (firstContent?.type === 'text' ? firstContent.text : 'No response generated.') || 'No response generated.'
+        }
+      )
     }
 
     throw new Error('No AI provider configured')
