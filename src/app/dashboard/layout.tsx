@@ -60,6 +60,10 @@ const adminNavigation = [
   { name: 'System Settings', href: '/dashboard/admin/settings', icon: Shield },
 ]
 
+const developmentNavigation = [
+  { name: 'Builder.io', href: '/builder', icon: Settings },
+]
+
 export default function DashboardLayout({
   children,
 }: {
@@ -156,6 +160,34 @@ export default function DashboardLayout({
                     className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
                       isActive
                         ? 'bg-primary-orange/20 text-primary-orange'
+                        : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <item.icon className={`h-5 w-5 ${sidebarOpen ? 'mr-3' : ''}`} />
+                    {sidebarOpen && <span>{item.name}</span>}
+                  </Link>
+                )
+              })}
+            </>
+          )}
+          
+          {/* Development Section */}
+          {process.env.NODE_ENV === 'development' && (
+            <>
+              {sidebarOpen && (
+                <div className="pt-4 pb-2">
+                  <p className="text-xs text-white/40 uppercase tracking-wider px-3">Development</p>
+                </div>
+              )}
+              {developmentNavigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center px-3 py-2 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-primary-purple/20 text-primary-purple'
                         : 'text-white/80 hover:bg-white/10 hover:text-white'
                     }`}
                   >
