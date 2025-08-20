@@ -63,7 +63,14 @@ function verifyWebhookSignature(body: string, signature: string | null): boolean
   return signature === `sha256=${expectedSignature}`
 }
 
-async function handleContentPublished(data: any) {
+interface ContentData {
+  modelName: string
+  url: string
+  name: string
+  [key: string]: unknown
+}
+
+async function handleContentPublished(data: ContentData) {
   console.log('Content published:', data)
   
   // Trigger cache revalidation
@@ -80,17 +87,21 @@ async function handleContentPublished(data: any) {
   }
 }
 
-async function handleContentUnpublished(data: any) {
+async function handleContentUnpublished(data: ContentData) {
   console.log('Content unpublished:', data)
   await revalidateContent(data.modelName, data.url)
 }
 
-async function handleContentArchived(data: any) {
+async function handleContentArchived(data: ContentData) {
   console.log('Content archived:', data)
   await revalidateContent(data.modelName, data.url)
 }
 
-async function handleModelUpdated(data: any) {
+interface ModelUpdateData {
+  [key: string]: unknown
+}
+
+async function handleModelUpdated(data: ModelUpdateData) {
   console.log('Model updated:', data)
   
   // Sync model changes back to codebase if needed
@@ -110,7 +121,7 @@ async function revalidateContent(modelName: string, url: string) {
   }
 }
 
-async function syncModelToCodebase(data: any) {
+async function syncModelToCodebase(data: ModelUpdateData) {
   // This would sync component changes back to your codebase
   // Implementation depends on your specific requirements
   console.log('Syncing model to codebase:', data)

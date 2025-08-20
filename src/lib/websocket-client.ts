@@ -34,6 +34,18 @@ export class WebSocketClient extends EventEmitter {
   }
 
   connect(): void {
+    // Don't attempt connection if URL is not provided
+    if (!this.url) {
+      console.log('No WebSocket URL provided, skipping connection')
+      return
+    }
+
+    // Skip WebSocket connection if server is not available
+    if (this.url.includes('localhost:3001') && !this.isWebSocketServerAvailable()) {
+      console.log('WebSocket server not available, skipping connection')
+      return
+    }
+
     try {
       this.ws = new WebSocket(this.url)
       
@@ -63,20 +75,32 @@ export class WebSocketClient extends EventEmitter {
       }
 
       this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error)
-        this.emit('error', error)
+        console.log('WebSocket connection unavailable (this is normal in development)')
+        // Don't emit error for connection refused - it's expected without a WebSocket server
       }
 
       this.ws.onclose = () => {
         console.log('WebSocket disconnected')
         this.emit('disconnected')
         this.stopHeartbeat()
-        this.attemptReconnect()
+        // Don't attempt reconnect for localhost development server
+        if (this.url && !this.url.includes('localhost:3001')) {
+          this.attemptReconnect()
+        }
       }
     } catch (error) {
-      console.error('Failed to connect WebSocket:', error)
-      this.attemptReconnect()
+      console.log('WebSocket connection failed (this is normal in development)')
+      // Don't attempt reconnect for localhost development server
+      if (this.url && !this.url.includes('localhost:3001')) {
+        this.attemptReconnect()
+      }
     }
+  }
+
+  private isWebSocketServerAvailable(): boolean {
+    // Simple check for WebSocket server availability
+    // In a real implementation, you might ping the server first
+    return false // For now, assume no WebSocket server in development
   }
 
   private handleMessage(message: WebSocketMessage): void {

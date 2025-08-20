@@ -78,7 +78,7 @@ export interface TenantMetadata {
   technicalContact?: string
   notes?: string
   tags?: string[]
-  customFields?: Record<string, any>
+  customFields?: Record<string, unknown>
 }
 
 export interface Organization {
@@ -113,7 +113,7 @@ export interface OrganizationMetadata {
   costCenter?: string
   manager?: string
   location?: string
-  customFields?: Record<string, any>
+  customFields?: Record<string, unknown>
 }
 
 export interface User {
@@ -150,7 +150,7 @@ export interface Permission {
 export interface PermissionCondition {
   field: string
   operator: 'equals' | 'not_equals' | 'contains' | 'in' | 'not_in'
-  value: any
+  value: unknown
 }
 
 export interface UserPreferences {
@@ -184,7 +184,7 @@ export interface UserMetadata {
   phoneNumber?: string
   location?: string
   employeeId?: string
-  customFields?: Record<string, any>
+  customFields?: Record<string, unknown>
 }
 
 export interface AuditLog {
@@ -195,7 +195,7 @@ export interface AuditLog {
   action: string
   resource: string
   resourceId: string
-  changes?: Record<string, { old: any; new: any }>
+  changes?: Record<string, { old: unknown; new: unknown }>
   ipAddress: string
   userAgent: string
   status: 'success' | 'failure'
@@ -852,8 +852,8 @@ export class TenantManager {
     return undefined
   }
 
-  private getChanges(oldObj: any, newObj: any): Record<string, { old: any; new: any }> {
-    const changes: Record<string, { old: any; new: any }> = {}
+  private getChanges(oldObj: Record<string, unknown>, newObj: Record<string, unknown>): Record<string, { old: unknown; new: unknown }> {
+    const changes: Record<string, { old: unknown; new: unknown }> = {}
     
     for (const key in newObj) {
       if (oldObj[key] !== newObj[key]) {

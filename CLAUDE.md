@@ -34,7 +34,7 @@ Deploy to GitHub automatically after major changes, bug fixes, or important mile
 
 ### Development
 ```bash
-# Start development server
+# Start development server (ALWAYS runs on port 3003 for Google OAuth compatibility)
 npm run dev
 
 # Build for production
@@ -46,6 +46,8 @@ npm start
 # Run linting
 npm run lint
 ```
+
+**IMPORTANT:** This project must always run on port 3003 in development due to Google OAuth redirect URL configuration. Do not change the port.
 
 ## Architecture
 

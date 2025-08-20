@@ -62,7 +62,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function syncComponentToBuilder(componentData: any) {
+interface ComponentData {
+  [key: string]: unknown
+}
+
+async function syncComponentToBuilder(componentData: ComponentData) {
   // Sync component changes to Builder.io
   const builderApiUrl = `https://builder.io/api/v1/write/page`
   
@@ -92,7 +96,11 @@ async function syncComponentToBuilder(componentData: any) {
   }
 }
 
-async function syncThemeToBuilder(themeData: any) {
+interface ThemeData {
+  [key: string]: unknown
+}
+
+async function syncThemeToBuilder(themeData: ThemeData) {
   // Sync theme updates to Builder.io
   const builderApiUrl = `https://builder.io/api/v1/spaces/${builderConfig.spaceId}/settings`
   
@@ -121,7 +129,11 @@ async function syncThemeToBuilder(themeData: any) {
   }
 }
 
-async function syncModelToBuilder(modelData: any, model: string) {
+interface ModelData {
+  [key: string]: unknown
+}
+
+async function syncModelToBuilder(modelData: ModelData, model: string) {
   // Sync model schema updates to Builder.io
   const builderApiUrl = `https://builder.io/api/v1/models/${model}`
   

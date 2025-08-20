@@ -29,13 +29,13 @@ export interface ConnectionCondition {
 }
 
 export interface NodeConfig {
-  [key: string]: any
+  [key: string]: unknown
   timeout?: number
   retries?: number
   onError?: 'stop' | 'continue' | 'retry'
   aiModel?: string
   prompt?: string
-  variables?: Record<string, any>
+  variables?: Record<string, unknown>
 }
 
 export interface NodeMetadata {
@@ -43,7 +43,7 @@ export interface NodeMetadata {
   version: string
   author: string
   documentation?: string
-  examples?: any[]
+  examples?: unknown[]
   cost?: number
   avgExecutionTime?: number
   successRate?: number
@@ -65,7 +65,7 @@ export interface WorkflowTemplate {
 export interface WorkflowVariable {
   name: string
   type: 'string' | 'number' | 'boolean' | 'object' | 'array'
-  defaultValue?: any
+  defaultValue?: unknown
   required: boolean
   description: string
   validation?: VariableValidation
@@ -87,7 +87,7 @@ export interface WorkflowTrigger {
 }
 
 export interface TriggerConfig {
-  [key: string]: any
+  [key: string]: unknown
   schedule?: string // cron expression
   webhookPath?: string
   emailFilter?: EmailFilter
@@ -122,7 +122,7 @@ export interface WorkflowExecution {
   endTime?: string
   duration?: number
   triggeredBy: string
-  triggerData?: any
+  triggerData?: unknown
   currentNode?: string
   nodeExecutions: NodeExecution[]
   variables: Record<string, any>
@@ -136,8 +136,8 @@ export interface NodeExecution {
   startTime?: string
   endTime?: string
   duration?: number
-  input?: any
-  output?: any
+  input?: unknown
+  output?: unknown
   error?: string
   retryCount: number
   cost?: number
@@ -300,7 +300,7 @@ export class WorkflowOrchestrator {
   async executeWorkflow(
     templateId: string,
     variables: Record<string, any> = {},
-    triggerData: any = null,
+    triggerData: unknown = null,
     triggeredBy: string = 'manual'
   ): Promise<string> {
     const template = this.templates.get(templateId)
@@ -551,7 +551,7 @@ export class WorkflowOrchestrator {
     }
   }
 
-  private evaluateConnectionCondition(connection: NodeConnection, nodeResult: any): boolean {
+  private evaluateConnectionCondition(connection: NodeConnection, nodeResult: unknown): boolean {
     if (!connection.condition || connection.condition.type === 'always') {
       return true
     }
@@ -773,7 +773,7 @@ export class WorkflowOrchestrator {
       .slice(0, 5)
   }
 
-  private calculatePerformanceMetrics(executions: WorkflowExecution[]): any {
+  private calculatePerformanceMetrics(executions: WorkflowExecution[]): Record<string, unknown> {
     return {
       avgExecutionTime: executions
         .filter(e => e.duration)
@@ -783,7 +783,7 @@ export class WorkflowOrchestrator {
     }
   }
 
-  private calculateCostBreakdown(executions: WorkflowExecution[]): any {
+  private calculateCostBreakdown(executions: WorkflowExecution[]): Record<string, unknown> {
     return {
       aiCosts: executions.reduce((sum, e) => sum + (e.metrics.aiModelCalls * 0.01), 0),
       computeCosts: executions.length * 0.001,
@@ -812,8 +812,8 @@ export interface WorkflowAnalytics {
   totalCost: number
   avgDuration: number
   mostUsedTemplates: Array<{ templateId: string; count: number }>
-  performanceMetrics: any
-  costBreakdown: any
+  performanceMetrics: Record<string, unknown>
+  costBreakdown: Record<string, unknown>
 }
 
 export const workflowOrchestrator = new WorkflowOrchestrator()

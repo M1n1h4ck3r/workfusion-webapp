@@ -60,7 +60,10 @@ export function CollaborationProvider({
       
       client.on('disconnected', () => {
         setIsConnected(false)
-        toast.error('Real-time collaboration disconnected')
+        // Only show error toast if we were previously connected
+        if (isConnected) {
+          toast.error('Real-time collaboration disconnected')
+        }
       })
       
       client.on('collaboration', (event: CollaborationEvent) => {
