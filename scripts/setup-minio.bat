@@ -1,45 +1,37 @@
 @echo off
-echo Setting up MinIO for WorkFusion...
+echo MinIO Setup for WorkFusion (Easypanel Deployment)
+echo.
 
-REM Check if Docker is running
-docker info >nul 2>&1
-if %errorlevel% neq 0 (
-    echo Docker is not running. Please start Docker Desktop and try again.
-    echo.
-    echo Alternative: Download MinIO binary from https://min.io/download
-    echo Then run: minio.exe server C:\minio-data --console-address :9001
-    pause
-    exit /b 1
-)
-
-echo Starting MinIO container...
-docker run -d ^
-  -p 9000:9000 ^
-  -p 9001:9001 ^
-  --name workfusion-minio ^
-  -e "MINIO_ROOT_USER=minioadmin" ^
-  -e "MINIO_ROOT_PASSWORD=minioadmin" ^
-  -v minio-data:/data ^
-  quay.io/minio/minio server /data --console-address ":9001"
-
-if %errorlevel% equ 0 (
-    echo.
-    echo ✅ MinIO is now running!
-    echo.
-    echo 📊 MinIO Console: http://localhost:9001
-    echo 🔗 MinIO API: http://localhost:9000
-    echo 👤 Username: minioadmin
-    echo 🔑 Password: minioadmin
-    echo.
-    echo Next steps:
-    echo 1. Open http://localhost:9001 in your browser
-    echo 2. Login with the credentials above
-    echo 3. Create a bucket named 'persona-avatars'
-    echo 4. Set the bucket policy to public read if needed
-    echo.
-) else (
-    echo ❌ Failed to start MinIO container
-    echo Check if port 9000 or 9001 are already in use
-)
+echo ℹ️  MinIO is hosted on Easypanel - no local setup required!
+echo.
+echo To configure your Easypanel MinIO instance:
+echo.
+echo 1. 🌐 Access your Easypanel dashboard
+echo 2. 📦 Navigate to your MinIO service
+echo 3. 🔑 Copy the access credentials
+echo 4. 📝 Update your .env.local file with:
+echo    - MINIO_ENDPOINT=your_easypanel_minio_domain.com
+echo    - MINIO_ACCESS_KEY=your_access_key
+echo    - MINIO_SECRET_KEY=your_secret_key
+echo    - MINIO_PUBLIC_URL=https://your_easypanel_minio_domain.com
+echo.
+echo 5. 🗂️  Create a bucket named 'persona-avatars' in MinIO console
+echo 6. 🔓 Set bucket policy to public read for avatar access
+echo.
+echo Required bucket policy for public access:
+echo {
+echo   "Version": "2012-10-17",
+echo   "Statement": [
+echo     {
+echo       "Effect": "Allow",
+echo       "Principal": {"AWS": "*"},
+echo       "Action": "s3:GetObject",
+echo       "Resource": "arn:aws:s3:::persona-avatars/*"
+echo     }
+echo   ]
+echo }
+echo.
+echo 🚀 Once configured, your WorkFusion app will automatically use
+echo    the Easypanel MinIO for avatar storage and file uploads!
 
 pause
