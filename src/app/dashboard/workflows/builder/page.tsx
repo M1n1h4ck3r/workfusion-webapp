@@ -554,7 +554,7 @@ export default function WorkflowBuilderPage() {
                   <label className="block text-white/60 text-sm mb-2">Delay (ms)</label>
                   <input
                     type="number"
-                    value={selectedNode.config.delay || 1000}
+                    value={(selectedNode.config.delay || 1000).toString()}
                     onChange={(e) => {
                       const updatedNode = {
                         ...selectedNode,

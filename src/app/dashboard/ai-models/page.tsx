@@ -24,13 +24,20 @@ export default function AIModelsPage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'providers' | 'models' | 'comparison' | 'monitoring'>('overview')
   const [isComparing, setIsComparing] = useState(false)
   const [comparisonResults, setComparisonResults] = useState<{
-    prompt: string
+    prompt?: string
     models: Array<{
       model: { id: string; name: string; provider: string }
-      response: string
-      time: number
-      score: number
+      response: any
+      time?: number
+      score?: number
+      ranking?: number
     }>
+    winner?: string
+    summary?: {
+      averageResponseTime: number
+      averageCost: number
+      averageQuality: number
+    }
   } | null>(null)
   const [testPrompt, setTestPrompt] = useState('Explain quantum computing in simple terms')
   const [healthStatus, setHealthStatus] = useState<Map<string, {
@@ -92,7 +99,10 @@ export default function AIModelsPage() {
         provider: 'openai'
       }, selectedModels)
 
-      setComparisonResults(results)
+      setComparisonResults({
+        prompt: testPrompt,
+        ...results
+      })
       toast.success(`Comparison completed for ${results.models.length} models`)
     } catch (error) {
       toast.error('Comparison failed. Please try again.')
@@ -169,7 +179,7 @@ export default function AIModelsPage() {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id as 'overview' | 'providers' | 'models' | 'comparison' | 'monitoring')}
             className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all ${
               activeTab === tab.id
                 ? 'bg-primary-green text-white'
@@ -535,26 +545,28 @@ export default function AIModelsPage() {
               <div className="glass-strong p-6 rounded-2xl">
                 <h3 className="text-lg font-semibold text-white mb-4">Comparison Results</h3>
                 
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 glass rounded-lg">
-                    <div className="text-2xl font-bold text-white">
-                      {comparisonResults.summary.averageResponseTime.toFixed(0)}ms
+                {comparisonResults.summary && (
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <div className="text-center p-4 glass rounded-lg">
+                      <div className="text-2xl font-bold text-white">
+                        {comparisonResults.summary.averageResponseTime.toFixed(0)}ms
+                      </div>
+                      <div className="text-sm text-white/60">Avg Response Time</div>
                     </div>
-                    <div className="text-sm text-white/60">Avg Response Time</div>
-                  </div>
-                  <div className="text-center p-4 glass rounded-lg">
-                    <div className="text-2xl font-bold text-green-400">
-                      {formatCost(comparisonResults.summary.averageCost)}
+                    <div className="text-center p-4 glass rounded-lg">
+                      <div className="text-2xl font-bold text-green-400">
+                        {formatCost(comparisonResults.summary.averageCost)}
+                      </div>
+                      <div className="text-sm text-white/60">Avg Cost</div>
                     </div>
-                    <div className="text-sm text-white/60">Avg Cost</div>
-                  </div>
-                  <div className="text-center p-4 glass rounded-lg">
-                    <div className="text-2xl font-bold text-blue-400">
-                      {(comparisonResults.summary.averageQuality * 100).toFixed(0)}%
+                    <div className="text-center p-4 glass rounded-lg">
+                      <div className="text-2xl font-bold text-blue-400">
+                        {(comparisonResults.summary.averageQuality * 100).toFixed(0)}%
+                      </div>
+                      <div className="text-sm text-white/60">Avg Quality</div>
                     </div>
-                    <div className="text-sm text-white/60">Avg Quality</div>
                   </div>
-                </div>
+                )}
 
                 <div className="space-y-4">
                   {comparisonResults.models.map((result, index) => (
@@ -575,26 +587,26 @@ export default function AIModelsPage() {
                           )}
                           <div>
                             <h4 className="text-lg font-semibold text-white">{result.model.name}</h4>
-                            <p className="text-sm text-white/60">Ranking Score: {result.ranking.toFixed(2)}</p>
+                            <p className="text-sm text-white/60">Ranking Score: {result.ranking?.toFixed(2) || 'N/A'}</p>
                           </div>
                         </div>
                         
                         <div className="flex items-center space-x-4">
                           <div className="text-center">
                             <div className="text-sm font-medium text-white">
-                              {result.response.metadata.responseTime}ms
+                              {result.response?.metadata?.responseTime || result.time || 0}ms
                             </div>
                             <div className="text-xs text-white/60">Response</div>
                           </div>
                           <div className="text-center">
                             <div className="text-sm font-medium text-white">
-                              {formatCost(result.response.usage.cost)}
+                              {formatCost(result.response?.usage?.cost || 0)}
                             </div>
                             <div className="text-xs text-white/60">Cost</div>
                           </div>
                           <div className="text-center">
                             <div className="text-sm font-medium text-white">
-                              {(result.response.metadata.quality * 100).toFixed(0)}%
+                              {((result.response?.metadata?.quality || result.score || 0) * 100).toFixed(0)}%
                             </div>
                             <div className="text-xs text-white/60">Quality</div>
                           </div>
@@ -602,7 +614,7 @@ export default function AIModelsPage() {
                       </div>
                       
                       <div className="glass p-3 rounded-lg">
-                        <p className="text-white/80 text-sm">{result.response.content}</p>
+                        <p className="text-white/80 text-sm">{result.response?.content || result.response}</p>
                       </div>
                     </div>
                   ))}

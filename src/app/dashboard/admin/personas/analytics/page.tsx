@@ -58,13 +58,16 @@ export default function PersonaAnalyticsPage() {
         // Mock growth calculation
         const growth = Math.random() * 40 - 10 // Random growth between -10% and +30%
         
+        // Mock total ratings (since we don't have actual ratings array)
+        const totalRatings = Math.floor(totalChats * 0.3) // Assume 30% of chats are rated
+        
         analyticsData.push({
           persona,
           stats: {
             totalChats,
             totalTokens,
             avgRating,
-            totalRatings: ratings.length,
+            totalRatings,
             activeUsers,
             lastUsed,
             growth

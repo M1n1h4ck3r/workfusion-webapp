@@ -468,7 +468,7 @@ export default function APIManagementPage() {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id as 'overview' | 'keys' | 'webhooks' | 'endpoints' | 'docs')}
             className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all ${
               activeTab === tab.id
                 ? 'bg-primary-green text-white'

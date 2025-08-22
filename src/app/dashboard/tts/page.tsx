@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/ui/loading'
 import { 
   Mic, Volume2, Download, Play, Pause, RotateCcw,
   FileAudio, Clock, Settings, Zap, Upload, 
-  Layers, Waveform, Sliders, Copy, 
+  Layers, Radio, Sliders, Copy, 
   FileText, Languages, Music, Repeat
 } from 'lucide-react'
 import { toast } from 'sonner'

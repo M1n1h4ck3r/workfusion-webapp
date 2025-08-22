@@ -518,7 +518,8 @@ export class AutonomousAgentSystem {
         input: { ...step.input, previousOutput },
         expectedOutput: step.expectedOutput,
         priority: 1,
-        maxRetries: 1
+        maxRetries: 1,
+        retries: 0
       }
 
       const taskId = await this.deployAgent(step.agentId, task)
@@ -582,7 +583,8 @@ export class AutonomousAgentSystem {
       },
       expectedOutput: 'Detailed task breakdown and assignments',
       priority: 1,
-      maxRetries: 2
+      maxRetries: 2,
+      retries: 0
     }
 
     const planTaskId = await this.deployAgent(coordinator, planTask)
@@ -598,7 +600,8 @@ export class AutonomousAgentSystem {
         input: collaboration.sharedMemory,
         expectedOutput: 'Task completion report',
         priority: 1,
-        maxRetries: 1
+        maxRetries: 1,
+        retries: 0
       }
     }))
 
@@ -619,7 +622,8 @@ export class AutonomousAgentSystem {
           input: collaboration.sharedMemory,
           expectedOutput: 'Proposed solution with reasoning',
           priority: 1,
-          maxRetries: 1
+          maxRetries: 1,
+          retries: 0
         }
 
         const taskId = await this.deployAgent(agentId, task)

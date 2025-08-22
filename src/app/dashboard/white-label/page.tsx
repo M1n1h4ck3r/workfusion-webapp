@@ -426,7 +426,7 @@ export default function WhiteLabelPage() {
         ].map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => setActiveTab(tab.id as 'overview' | 'branding' | 'tenants' | 'themes' | 'settings')}
             className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-all ${
               activeTab === tab.id
                 ? 'bg-primary-green text-white'

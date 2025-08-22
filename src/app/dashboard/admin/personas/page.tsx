@@ -190,12 +190,18 @@ export default function PersonaManagementPage() {
     for (const persona of personaList) {
       try {
         const statsData = await PersonaService.getUsageStats(persona.id)
-        stats[persona.id] = {
-          totalUsages: statsData.length,
-          avgRating: statsData.length > 0 
-            ? statsData.reduce((sum, stat) => sum + (stat.rating || 0), 0) / statsData.filter(s => s.rating).length 
-            : 0,
-          totalTokens: statsData.reduce((sum, stat) => sum + stat.tokens_used, 0)
+        if (statsData) {
+          stats[persona.id] = {
+            totalUsages: statsData.totalUsages,
+            avgRating: statsData.avgRating,
+            totalTokens: statsData.totalTokens
+          }
+        } else {
+          stats[persona.id] = {
+            totalUsages: 0,
+            avgRating: 0,
+            totalTokens: 0
+          }
         }
       } catch (error) {
         console.warn(`Failed to load stats for persona ${persona.id}:`, error)
