@@ -22,7 +22,10 @@
       "Bash(powershell:*)",
       "Bash(move:*)",
       "Bash(rm:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "WebFetch(domain:lucide.dev)",
+      "WebSearch",
+      "Bash(npm update:*)"
     ],
     "deny": [],
     "ask": [],

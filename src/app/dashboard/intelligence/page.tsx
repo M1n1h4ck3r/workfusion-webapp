@@ -10,7 +10,7 @@ import {
   BarChart3, PieChart, LineChart, Activity, Target, Zap,
   DollarSign, Users, ShoppingCart, Package, Clock, Calendar,
   ChevronRight, ChevronUp, ChevronDown, Info, CheckCircle2,
-  AlertCircle, XCircle, Lightbulb, Shield, TrendingUp as Trend,
+  AlertCircle, XCircle, Lightbulb, Shield,
   Eye, Download, Share2, Settings, RefreshCw, Filter, Plus,
   ArrowUp, ArrowDown, Maximize2, Minimize2, Bell, Search, FileText
 } from 'lucide-react'
