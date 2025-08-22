@@ -4,6 +4,11 @@ import { createClient } from '@supabase/supabase-js'
 
 // Helper to check admin role
 async function checkAdminRole(request: NextRequest) {
+  // In development, allow all requests for testing
+  if (process.env.NODE_ENV === 'development') {
+    return true
+  }
+  
   const authHeader = request.headers.get('authorization')
   if (!authHeader) {
     return false

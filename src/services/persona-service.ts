@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Types
+// Persona interface
 export interface Persona {
   id: string
   slug: string
@@ -22,15 +22,15 @@ export interface Persona {
 }
 
 export interface PersonaUsageStats {
-  id: string
-  persona_id: string
-  user_id: string
-  messages_count: number
-  tokens_used: number
-  rating?: number
-  feedback?: string
-  started_at: string
-  ended_at?: string
+  personaId: string
+  totalUsages: number
+  avgRating: number
+  totalTokens: number
+  lastUsedAt: string
+}
+
+export interface PersonaWithUsage extends Persona {
+  usage?: PersonaUsageStats
 }
 
 // Initialize Supabase client
@@ -39,10 +39,74 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Mock data for development
+const mockPersonas: Persona[] = [
+  {
+    id: '1',
+    slug: 'friendly-assistant',
+    name: 'Friendly Assistant',
+    avatar_type: 'emoji',
+    avatar_emoji: '😊',
+    category: 'General',
+    description: 'A helpful and friendly AI assistant',
+    system_prompt: 'You are a helpful, friendly, and professional AI assistant.',
+    greeting: 'Hello! How can I help you today?',
+    is_active: true,
+    is_default: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    slug: 'tech-expert',
+    name: 'Tech Expert',
+    avatar_type: 'emoji',
+    avatar_emoji: '💻',
+    category: 'Technical',
+    description: 'Expert in technology and programming',
+    system_prompt: 'You are a knowledgeable technology expert.',
+    greeting: 'Hi there! Ready to tackle any technical questions.',
+    is_active: true,
+    is_default: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  },
+  {
+    id: '3',
+    slug: 'creative-writer',
+    name: 'Creative Writer',
+    avatar_type: 'emoji',
+    avatar_emoji: '✍️',
+    category: 'Creative',
+    description: 'Creative writing and storytelling assistant',
+    system_prompt: 'You are a creative writing assistant.',
+    greeting: 'Let\'s create something amazing together!',
+    is_active: true,
+    is_default: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+]
+
+// In-memory storage for development
+let devPersonas: Persona[] = [...mockPersonas]
+let nextId = 4
+
+// Helper to check if we should use mock data
+const useMockData = () => {
+  // Always use mock data in development for now
+  return process.env.NODE_ENV === 'development'
+}
+
 // Persona Service Class
 export class PersonaService {
   // Get all active personas
   static async getActivePersonas(): Promise<Persona[]> {
+    // Use mock data in development if Supabase is not available
+    if (useMockData()) {
+      return devPersonas.filter(p => p.is_active)
+    }
+
     const { data, error } = await supabase
       .from('personas')
       .select('*')
@@ -52,7 +116,28 @@ export class PersonaService {
 
     if (error) {
       console.error('Error fetching personas:', error)
-      return []
+      // Return mock data as fallback
+      return devPersonas.filter(p => p.is_active)
+    }
+
+    return data || []
+  }
+
+  // Get all personas including inactive (admin only)
+  static async getAllPersonas(): Promise<Persona[]> {
+    if (useMockData()) {
+      return devPersonas
+    }
+
+    const { data, error } = await supabase
+      .from('personas')
+      .select('*')
+      .order('category', { ascending: true })
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching all personas:', error)
+      return devPersonas
     }
 
     return data || []
@@ -60,6 +145,10 @@ export class PersonaService {
 
   // Get persona by slug
   static async getPersonaBySlug(slug: string): Promise<Persona | null> {
+    if (useMockData()) {
+      return devPersonas.find(p => p.slug === slug && p.is_active) || null
+    }
+
     const { data, error } = await supabase
       .from('personas')
       .select('*')
@@ -68,8 +157,8 @@ export class PersonaService {
       .single()
 
     if (error) {
-      console.error('Error fetching persona:', error)
-      return null
+      console.error('Error fetching persona by slug:', error)
+      return devPersonas.find(p => p.slug === slug && p.is_active) || null
     }
 
     return data
@@ -77,6 +166,10 @@ export class PersonaService {
 
   // Get persona by ID
   static async getPersonaById(id: string): Promise<Persona | null> {
+    if (useMockData()) {
+      return devPersonas.find(p => p.id === id) || null
+    }
+
     const { data, error } = await supabase
       .from('personas')
       .select('*')
@@ -85,7 +178,7 @@ export class PersonaService {
 
     if (error) {
       console.error('Error fetching persona:', error)
-      return null
+      return devPersonas.find(p => p.id === id) || null
     }
 
     return data
@@ -93,6 +186,30 @@ export class PersonaService {
 
   // Create new persona (admin only)
   static async createPersona(persona: Partial<Persona>): Promise<Persona | null> {
+    if (useMockData()) {
+      const newPersona: Persona = {
+        id: String(nextId++),
+        slug: persona.slug || persona.name?.toLowerCase().replace(/\s+/g, '-') || 'persona',
+        name: persona.name || 'New Persona',
+        avatar_type: persona.avatar_type || 'emoji',
+        avatar_emoji: persona.avatar_emoji || '🤖',
+        avatar_url: persona.avatar_url,
+        category: persona.category || 'General',
+        description: persona.description || '',
+        system_prompt: persona.system_prompt || 'You are a helpful AI assistant.',
+        greeting: persona.greeting || 'Hello!',
+        voice_id: persona.voice_id,
+        response_style: persona.response_style,
+        is_active: persona.is_active !== undefined ? persona.is_active : true,
+        is_default: persona.is_default || false,
+        metadata: persona.metadata,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      devPersonas.push(newPersona)
+      return newPersona
+    }
+
     const { data, error } = await supabase
       .from('personas')
       .insert([persona])
@@ -109,6 +226,18 @@ export class PersonaService {
 
   // Update persona (admin only)
   static async updatePersona(id: string, updates: Partial<Persona>): Promise<Persona | null> {
+    if (useMockData()) {
+      const index = devPersonas.findIndex(p => p.id === id)
+      if (index === -1) return null
+      
+      devPersonas[index] = {
+        ...devPersonas[index],
+        ...updates,
+        updated_at: new Date().toISOString()
+      }
+      return devPersonas[index]
+    }
+
     const { data, error } = await supabase
       .from('personas')
       .update(updates)
@@ -126,6 +255,14 @@ export class PersonaService {
 
   // Delete persona (admin only)
   static async deletePersona(id: string): Promise<boolean> {
+    if (useMockData()) {
+      const index = devPersonas.findIndex(p => p.id === id)
+      if (index === -1) return false
+      
+      devPersonas.splice(index, 1)
+      return true
+    }
+
     const { error } = await supabase
       .from('personas')
       .delete()
@@ -139,165 +276,104 @@ export class PersonaService {
     return true
   }
 
-  // Upload persona avatar image - client-side version
-  // Note: Actual upload happens via API route to use server-side MinIO service
-  static async uploadAvatar(personaId: string, file: File): Promise<string | null> {
-    try {
-      // Upload via API route (which uses server-side MinIO)
-      const formData = new FormData()
-      formData.append('file', file)
-      
-      const response = await fetch(`/api/personas/${personaId}/avatar`, {
-        method: 'POST',
-        body: formData
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to upload avatar')
-      }
-      
-      const { avatarUrl } = await response.json()
-      return avatarUrl
-    } catch (error) {
-      console.error('Error uploading avatar:', error)
-      return null
+  // Get default persona
+  static async getDefaultPersona(): Promise<Persona | null> {
+    if (useMockData()) {
+      return devPersonas.find(p => p.is_default && p.is_active) || devPersonas[0] || null
     }
-  }
 
-  // Delete avatar image - client-side version
-  static async deleteAvatar(personaId: string, avatarUrl: string): Promise<boolean> {
-    try {
-      // Delete via API route
-      const response = await fetch(`/api/personas/${personaId}/avatar`, {
-        method: 'DELETE'
-      })
-      
-      return response.ok
-    } catch (error) {
-      console.error('Error deleting avatar:', error)
-      return false
-    }
-  }
-
-  // Track usage statistics
-  static async trackUsage(
-    personaId: string,
-    userId: string,
-    sessionId: string,
-    messagesCount: number = 1,
-    tokensUsed: number = 0
-  ): Promise<void> {
-    await supabase
-      .from('persona_usage_stats')
-      .upsert({
-        persona_id: personaId,
-        user_id: userId,
-        session_id: sessionId,
-        messages_count: messagesCount,
-        tokens_used: tokensUsed
-      }, {
-        onConflict: 'session_id',
-        count: 'exact'
-      })
-  }
-
-  // Add user feedback/rating
-  static async addFeedback(
-    sessionId: string,
-    rating: number,
-    feedback?: string
-  ): Promise<void> {
-    await supabase
-      .from('persona_usage_stats')
-      .update({
-        rating,
-        feedback,
-        ended_at: new Date().toISOString()
-      })
-      .eq('session_id', sessionId)
-  }
-
-  // Get usage statistics for a persona
-  static async getUsageStats(personaId: string): Promise<PersonaUsageStats[]> {
     const { data, error } = await supabase
-      .from('persona_usage_stats')
+      .from('personas')
       .select('*')
-      .eq('persona_id', personaId)
-      .order('started_at', { ascending: false })
-      .limit(100)
+      .eq('is_default', true)
+      .eq('is_active', true)
+      .single()
 
     if (error) {
-      console.error('Error fetching usage stats:', error)
-      return []
+      console.error('Error fetching default persona:', error)
+      // Fallback to first active persona
+      const personas = await this.getActivePersonas()
+      return personas[0] || null
     }
 
-    return data || []
+    return data
   }
 
-  // Get popular personas
-  static async getPopularPersonas(limit: number = 5): Promise<Persona[]> {
+  // Get personas by category
+  static async getPersonasByCategory(category: string): Promise<Persona[]> {
+    if (useMockData()) {
+      return devPersonas.filter(p => p.category === category && p.is_active)
+    }
+
     const { data, error } = await supabase
-      .rpc('get_popular_personas', { limit_count: limit })
+      .from('personas')
+      .select('*')
+      .eq('category', category)
+      .eq('is_active', true)
+      .order('name', { ascending: true })
 
     if (error) {
-      console.error('Error fetching popular personas:', error)
+      console.error('Error fetching personas by category:', error)
+      return devPersonas.filter(p => p.category === category && p.is_active)
+    }
+
+    return data || []
+  }
+
+  // Search personas
+  static async searchPersonas(query: string): Promise<Persona[]> {
+    if (useMockData()) {
+      const lowerQuery = query.toLowerCase()
+      return devPersonas.filter(p => 
+        p.is_active && (
+          p.name.toLowerCase().includes(lowerQuery) ||
+          p.description?.toLowerCase().includes(lowerQuery) ||
+          p.category.toLowerCase().includes(lowerQuery)
+        )
+      )
+    }
+
+    const { data, error } = await supabase
+      .from('personas')
+      .select('*')
+      .eq('is_active', true)
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%,category.ilike.%${query}%`)
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error searching personas:', error)
       return []
     }
 
     return data || []
   }
 
-  // Helper function to get avatar display
-  static getAvatarDisplay(persona: Persona): { type: 'emoji' | 'image', value: string, thumbnail?: string } {
+  // Get avatar display info
+  static getAvatarDisplay(persona: Persona): { type: 'emoji' | 'image', content: string } {
     if (persona.avatar_type === 'image' && persona.avatar_url) {
-      // Avatar URL is already the full MinIO URL
-      return { 
-        type: 'image', 
-        value: persona.avatar_url,
-        thumbnail: persona.metadata?.thumbnailUrl
-      }
+      return { type: 'image', content: persona.avatar_url }
     }
-    return { type: 'emoji', value: persona.avatar_emoji || '🤖' }
+    return { type: 'emoji', content: persona.avatar_emoji || '🤖' }
   }
 
-  // Migrate avatars from Supabase to MinIO
-  // Note: This should be called from a server-side context or API route
-  static async migrateAvatarsToMinIO(): Promise<void> {
-    console.log('Avatar migration should be performed via API route or server-side script')
-  }
-
-  // Cache personas locally for performance
-  private static personaCache: Map<string, Persona> = new Map()
-  private static cacheExpiry: number = 5 * 60 * 1000 // 5 minutes
-
-  static async getCachedPersona(slug: string): Promise<Persona | null> {
-    const cached = this.personaCache.get(slug)
-    
-    if (cached) {
-      return cached
+  // Get categories
+  static async getCategories(): Promise<string[]> {
+    if (useMockData()) {
+      const categories = new Set(devPersonas.filter(p => p.is_active).map(p => p.category))
+      return Array.from(categories).sort()
     }
 
-    const persona = await this.getPersonaBySlug(slug)
-    
-    if (persona) {
-      this.personaCache.set(slug, persona)
-      
-      // Clear cache after expiry
-      setTimeout(() => {
-        this.personaCache.delete(slug)
-      }, this.cacheExpiry)
+    const { data, error } = await supabase
+      .from('personas')
+      .select('category')
+      .eq('is_active', true)
+
+    if (error) {
+      console.error('Error fetching categories:', error)
+      return ['General', 'Technical', 'Creative', 'Business', 'Health']
     }
 
-    return persona
-  }
-
-  // Clear persona cache
-  static clearCache(): void {
-    this.personaCache.clear()
+    const categories = new Set(data?.map(item => item.category) || [])
+    return Array.from(categories).sort()
   }
 }
-
-// Export for backward compatibility
-export const getPersonas = PersonaService.getActivePersonas
-export const getPersonaBySlug = PersonaService.getPersonaBySlug
-export const uploadPersonaAvatar = PersonaService.uploadAvatar

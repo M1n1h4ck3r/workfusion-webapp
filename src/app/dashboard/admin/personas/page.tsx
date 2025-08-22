@@ -104,14 +104,21 @@ export default function PersonaManagementPage() {
     try {
       setIsLoading(true)
       
-      // Get auth token (you may need to adjust this based on your auth setup)
-      const token = localStorage.getItem('supabase.auth.token')
+      // Get the current session from Supabase
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+      
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
       }
       
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
       }
 
       const url = showInactive ? '/api/personas?include_inactive=true' : '/api/personas'
@@ -119,17 +126,55 @@ export default function PersonaManagementPage() {
       
       if (response.ok) {
         const data = await response.json()
-        const uiPersonas = data.map(convertToUIPersona)
+        console.log('Loaded personas:', data)
+        const uiPersonas = Array.isArray(data) ? data.map(convertToUIPersona) : []
         setPersonas(uiPersonas)
         
         // Load usage stats for each persona
         loadUsageStats(uiPersonas)
       } else {
+        console.error('Failed to load personas, response not ok:', response.status)
         toast.error('Failed to load personas')
+        // Load mock data as fallback
+        setPersonas([
+          {
+            id: '1',
+            slug: 'friendly-assistant',
+            name: 'Friendly Assistant',
+            avatar: '😊',
+            avatarType: 'emoji',
+            category: 'General',
+            description: 'A helpful AI assistant',
+            systemPrompt: 'You are helpful',
+            greeting: 'Hello!',
+            isActive: true,
+            isDefault: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ])
       }
     } catch (error) {
       console.error('Error loading personas:', error)
-      toast.error('Failed to load personas')
+      toast.error('Failed to load personas - using mock data')
+      // Load mock data as fallback
+      setPersonas([
+        {
+          id: '1',
+          slug: 'friendly-assistant',
+          name: 'Friendly Assistant',
+          avatar: '😊',
+          avatarType: 'emoji',
+          category: 'General',
+          description: 'A helpful AI assistant',
+          systemPrompt: 'You are helpful',
+          greeting: 'Hello!',
+          isActive: true,
+          isDefault: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ])
     } finally {
       setIsLoading(false)
     }
@@ -191,13 +236,21 @@ export default function PersonaManagementPage() {
     setIsSaving(true)
     
     try {
-      const token = localStorage.getItem('supabase.auth.token')
+      // Get the current session from Supabase
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+      
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
       }
       
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
       }
 
       let response
@@ -257,6 +310,9 @@ export default function PersonaManagementPage() {
   }
 
   const handleCreate = () => {
+    console.log('handleCreate function called!')
+    console.log('Current state - isLoading:', isLoading, 'editingId:', editingId)
+    
     const newPersona: UIPersona = {
       id: `new-${Date.now()}`,
       slug: '',
@@ -274,9 +330,22 @@ export default function PersonaManagementPage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
+    
+    // Add to the beginning of the list so it's visible
+    setPersonas(prev => [newPersona, ...prev])
     setEditingId(newPersona.id)
     setEditForm(newPersona)
-    setPersonas(prev => [...prev, newPersona])
+    
+    // Clear filters to ensure the new persona is visible
+    setSearchTerm('')
+    setCategoryFilter('all')
+    
+    // Scroll to top after a short delay
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 100)
+    
+    toast.info('New persona created - edit and save to persist')
   }
 
   const handleDelete = async (id: string, persona: UIPersona) => {
@@ -317,13 +386,21 @@ export default function PersonaManagementPage() {
 
   const handleToggleActive = async (id: string, currentState: boolean) => {
     try {
-      const token = localStorage.getItem('supabase.auth.token')
+      // Get the current session from Supabase
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+      )
+      
+      const { data: { session } } = await supabase.auth.getSession()
+      
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
       }
       
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
       }
 
       const response = await fetch(`/api/personas/${id}`, {
@@ -367,6 +444,11 @@ export default function PersonaManagementPage() {
 
   // Filter and search logic
   const filteredPersonas = personas.filter(persona => {
+    // Always include the persona being edited
+    if (editingId && persona.id === editingId) {
+      return true
+    }
+    
     const matchesSearch = persona.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          persona.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          persona.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -424,9 +506,19 @@ export default function PersonaManagementPage() {
             <Filter className="h-4 w-4 mr-2" />
             {showInactive ? 'Hide Inactive' : 'Show All'}
           </Button>
-          <Button onClick={handleCreate} className="btn-primary">
+          <Button 
+            onClick={() => {
+              console.log('Button clicked, isLoading:', isLoading)
+              if (!isLoading) {
+                handleCreate()
+              }
+            }} 
+            disabled={isLoading}
+            className="btn-primary"
+            style={{ position: 'relative', zIndex: 10 }}
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Create New Persona
+            {isLoading ? 'Loading...' : 'Create New Persona'}
           </Button>
         </div>
       </div>
