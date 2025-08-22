@@ -1571,7 +1571,7 @@ message_id = send_whatsapp("+1234567890", "Hello from WorkFusion API!")`
               </div>
               
               <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8">
-                Everything you need to integrate WorkFusion's AI-powered APIs into your applications. 
+                Everything you need to integrate WorkFusion&apos;s AI-powered APIs into your applications. 
                 From quick start guides to advanced features.
               </p>
 

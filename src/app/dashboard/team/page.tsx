@@ -13,7 +13,7 @@ import {
   Activity, Bell, Search, Filter, MoreVertical,
   Folder, Star, Edit3, Trash2, Copy, Download,
   Zap, Target, TrendingUp, Calendar, Mail,
-  Video, Phone, Globe, Lock, Unlock, ChevronDown
+  Video, Phone, Globe, Lock, Unlock, ChevronDown, Plus
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -433,7 +433,7 @@ export default function TeamPage() {
             <Activity className="h-8 w-8 text-red-400" />
             <span className="text-2xl font-bold text-white">247</span>
           </div>
-          <p className="text-white/60 text-sm">Today's Activities</p>
+          <p className="text-white/60 text-sm">Today&apos;s Activities</p>
           <p className="text-red-400 text-xs">+12% from yesterday</p>
         </motion.div>
       </div>

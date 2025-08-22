@@ -1,32 +1,50 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { LoadingSpinner } from '@/components/ui/loading'
 import { Badge } from '@/components/ui/badge'
-import { motion } from 'framer-motion'
+import { Card } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import {
-  Users,
-  Activity,
-  DollarSign,
   Search,
   Filter,
-  Shield,
-  Ban,
-  Edit,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  UserPlus,
   Download,
+  Upload,
+  UserPlus,
+  MoreVertical,
+  Settings,
+  Ban,
+  Trash2,
+  Shield,
   Eye,
   CheckCircle,
   Zap
 } from 'lucide-react'
 import { toast } from 'sonner'
 
+// User type
+type User = {
+  id: string
+  name: string
+  email: string
+  avatar: null
+  role: string
+  status: string
+  tokens: number
+  tokensUsed: number
+  plan: string
+  createdAt: string
+  lastActive: string
+  verified: boolean
+}
+
+type SelectedUserState = (User & { isNew?: boolean; isEdit?: boolean }) | { isNew: true } | null
+
 // Mock data for users
-const generateMockUsers = () => {
+const generateMockUsers = (): User[] => {
   const users = []
   const names = [
     'John Doe', 'Jane Smith', 'Alex Johnson', 'Maria Garcia', 'David Wilson',
@@ -57,474 +75,452 @@ const generateMockUsers = () => {
   return users.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 }
 
-const mockUsers = generateMockUsers()
-
 export default function AdminDashboard() {
-  const [users, setUsers] = useState(mockUsers)
+  const [users, setUsers] = useState(generateMockUsers())
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedRole, setSelectedRole] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('all')
   const [selectedPlan, setSelectedPlan] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
-  const [selectedUser, setSelectedUser] = useState<typeof users[0] | null>(null)
+  const [selectedUser, setSelectedUser] = useState<SelectedUserState>(null)
   const itemsPerPage = 10
 
   // Calculate statistics
   const totalUsers = users.length
   const activeUsers = users.filter(u => u.status === 'active').length
-  const totalRevenue = users.filter(u => u.plan !== 'free').length * 29.99
+  const verifiedUsers = users.filter(u => u.verified).length
+  const totalTokens = users.reduce((sum, u) => sum + u.tokens, 0)
   const totalTokensUsed = users.reduce((sum, u) => sum + u.tokensUsed, 0)
+  const adminUsers = users.filter(u => u.role === 'admin').length
 
   // Filter users
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesRole = selectedRole === 'all' || user.role === selectedRole
-    const matchesStatus = selectedStatus === 'all' || user.status === selectedStatus
-    const matchesPlan = selectedPlan === 'all' || user.plan === selectedPlan
-    
-    return matchesSearch && matchesRole && matchesStatus && matchesPlan
-  })
+  let filteredUsers = users
+
+  if (searchQuery) {
+    filteredUsers = filteredUsers.filter(user =>
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }
+
+  if (selectedRole !== 'all') {
+    filteredUsers = filteredUsers.filter(user => user.role === selectedRole)
+  }
+
+  if (selectedStatus !== 'all') {
+    filteredUsers = filteredUsers.filter(user => user.status === selectedStatus)
+  }
+
+  if (selectedPlan !== 'all') {
+    filteredUsers = filteredUsers.filter(user => user.plan === selectedPlan)
+  }
 
   // Pagination
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentUsers = filteredUsers.slice(startIndex, endIndex)
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
 
-  const handleUserAction = async (userId: string, action: 'suspend' | 'activate' | 'delete' | 'makeAdmin') => {
-    switch(action) {
-      case 'suspend':
-        setUsers(users.map(u => u.id === userId ? { ...u, status: 'suspended' } : u))
-        toast.success('User suspended successfully')
-        break
-      case 'activate':
-        setUsers(users.map(u => u.id === userId ? { ...u, status: 'active' } : u))
-        toast.success('User activated successfully')
-        break
-      case 'delete':
-        if (confirm('Are you sure you want to delete this user?')) {
-          setUsers(users.filter(u => u.id !== userId))
-          toast.success('User deleted successfully')
-        }
-        break
-      case 'makeAdmin':
-        setUsers(users.map(u => u.id === userId ? { ...u, role: 'admin' } : u))
-        toast.success('User promoted to admin')
-        break
-    }
+  const handleUserAction = (userId: string, action: string) => {
+    toast.success(`Action "${action}" executed for user ${userId}`)
   }
 
   const handleAddTokens = (userId: string, amount: number) => {
-    setUsers(users.map(u => u.id === userId ? { ...u, tokens: u.tokens + amount } : u))
+    setUsers(users.map(user => 
+      user.id === userId
+        ? { ...user, tokens: user.tokens + amount }
+        : user
+    ))
     toast.success(`Added ${amount} tokens to user`)
   }
 
   const exportUsers = () => {
-    const csv = [
-      ['ID', 'Name', 'Email', 'Role', 'Status', 'Plan', 'Tokens', 'Created At', 'Last Active'].join(','),
+    const csvContent = [
+      ['Name', 'Email', 'Role', 'Status', 'Plan', 'Tokens', 'Verified', 'Created At', 'Last Active'],
       ...filteredUsers.map(user => [
-        user.id,
         user.name,
         user.email,
         user.role,
         user.status,
         user.plan,
-        user.tokens,
-        new Date(user.createdAt).toLocaleDateString(),
-        new Date(user.lastActive).toLocaleDateString()
-      ].join(','))
-    ].join('\n')
-    
-    const blob = new Blob([csv], { type: 'text/csv' })
+        user.tokens.toString(),
+        user.verified ? 'Yes' : 'No',
+        user.createdAt,
+        user.lastActive
+      ])
+    ].map(row => row.join(',')).join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `users-${new Date().toISOString().split('T')[0]}.csv`
+    a.download = 'users-export.csv'
     a.click()
-    
+    URL.revokeObjectURL(url)
     toast.success('Users exported successfully')
   }
 
+  // Type guard helper
+  const isFullUser = (user: SelectedUserState): user is User & { isNew?: boolean; isEdit?: boolean } => {
+    return user !== null && !('isNew' in user && user.isNew === true && Object.keys(user).length === 1)
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-dark">
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
-            <p className="text-white/80">Manage users and monitor platform activity</p>
-          </div>
-          
-          <div className="flex space-x-3 mt-4 sm:mt-0">
-            <Button
-              onClick={() => setSelectedUser({ isNew: true })}
-              className="btn-primary"
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add User
-            </Button>
-            <Button
-              onClick={exportUsers}
-              variant="outline"
-              className="glass text-white border-white/20 hover:bg-white/10"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          </div>
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+          <p className="text-white/80">Manage users and monitor platform activity</p>
         </div>
-
-        {/* Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <motion.div
-            className="glass-strong p-6 rounded-2xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
+        
+        <div className="flex space-x-3 mt-4 sm:mt-0">
+          <Button
+            onClick={() => setSelectedUser({ isNew: true })}
+            className="btn-primary"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <Users className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-white/60 text-sm">Total</span>
-            </div>
-            
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white">{totalUsers}</div>
-              <p className="text-white/60 text-sm">Registered users</p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="glass-strong p-6 rounded-2xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add User
+          </Button>
+          <Button
+            onClick={exportUsers}
+            variant="outline"
+            className="glass text-white border-white/20 hover:bg-white/10"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-emerald-500 rounded-xl flex items-center justify-center">
-                <Activity className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-white/60 text-sm">Active</span>
-            </div>
-            
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white">{activeUsers}</div>
-              <p className="text-white/60 text-sm">Active users</p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="glass-strong p-6 rounded-2xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-white/60 text-sm">Revenue</span>
-            </div>
-            
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white">${totalRevenue.toFixed(0)}</div>
-              <p className="text-white/60 text-sm">Monthly revenue</p>
-            </div>
-          </motion.div>
-
-          <motion.div
-            className="glass-strong p-6 rounded-2xl"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-xl flex items-center justify-center">
-                <Zap className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-white/60 text-sm">Usage</span>
-            </div>
-            
-            <div className="space-y-1">
-              <div className="text-3xl font-bold text-white">{(totalTokensUsed / 1000).toFixed(1)}k</div>
-              <p className="text-white/60 text-sm">Tokens used</p>
-            </div>
-          </motion.div>
+            <Download className="mr-2 h-4 w-4" />
+            Export
+          </Button>
         </div>
+      </div>
 
-        {/* Filters */}
-        <motion.div
-          className="glass-strong p-6 rounded-2xl"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name or email..."
-                  className="input-glass pl-10"
-                />
-              </div>
-            </div>
-            
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="input-glass px-4 py-2 rounded-lg"
-            >
-              <option value="all">All Roles</option>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-            
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="input-glass px-4 py-2 rounded-lg"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-              <option value="suspended">Suspended</option>
-            </select>
-            
-            <select
-              value={selectedPlan}
-              onChange={(e) => setSelectedPlan(e.target.value)}
-              className="input-glass px-4 py-2 rounded-lg"
-            >
-              <option value="all">All Plans</option>
-              <option value="free">Free</option>
-              <option value="starter">Starter</option>
-              <option value="pro">Pro</option>
-            </select>
-            
-            <Button
-              onClick={() => {
-                setSearchQuery('')
-                setSelectedRole('all')
-                setSelectedStatus('all')
-                setSelectedPlan('all')
-                setCurrentPage(1)
-              }}
-              variant="outline"
-              className="glass text-white border-white/20 hover:bg-white/10"
-            >
-              <Filter className="mr-2 h-4 w-4" />
-              Clear
-            </Button>
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <Card className="glass-strong p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white/60 text-sm">Total Users</span>
+            <Badge className="bg-primary-green/20 text-primary-green border-primary-green/30">
+              All Time
+            </Badge>
           </div>
-        </motion.div>
+          <p className="text-2xl font-bold text-white">{totalUsers}</p>
+          <p className="text-xs text-primary-green">+15% from last month</p>
+        </Card>
 
-        {/* Users Table */}
-        <motion.div
-          className="glass-strong rounded-2xl overflow-hidden"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-        >
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-white/5 border-b border-white/10">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">User</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">Role</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">Plan</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">Tokens</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">Joined</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">Last Active</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium text-white/80">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {currentUsers.map((user, index) => (
-                  <motion.tr
-                    key={user.id}
-                    className="hover:bg-white/5 transition-colors"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center text-white font-semibold">
+        <Card className="glass-strong p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white/60 text-sm">Active Users</span>
+            <CheckCircle className="h-4 w-4 text-green-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{activeUsers}</p>
+          <Progress value={(activeUsers / totalUsers) * 100} className="mt-2" />
+        </Card>
+
+        <Card className="glass-strong p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white/60 text-sm">Verified</span>
+            <Shield className="h-4 w-4 text-blue-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{verifiedUsers}</p>
+          <p className="text-xs text-blue-400">{((verifiedUsers / totalUsers) * 100).toFixed(1)}% verified</p>
+        </Card>
+
+        <Card className="glass-strong p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white/60 text-sm">Admins</span>
+            <Shield className="h-4 w-4 text-purple-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{adminUsers}</p>
+          <p className="text-xs text-purple-400">System administrators</p>
+        </Card>
+
+        <Card className="glass-strong p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white/60 text-sm">Total Tokens</span>
+            <Zap className="h-4 w-4 text-yellow-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{totalTokens.toLocaleString()}</p>
+          <p className="text-xs text-yellow-400">Available</p>
+        </Card>
+
+        <Card className="glass-strong p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-white/60 text-sm">Tokens Used</span>
+            <Zap className="h-4 w-4 text-orange-400" />
+          </div>
+          <p className="text-2xl font-bold text-white">{totalTokensUsed.toLocaleString()}</p>
+          <p className="text-xs text-orange-400">Consumed</p>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card className="glass-strong p-4">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search users..."
+                className="input-glass pl-10"
+              />
+            </div>
+          </div>
+
+          <select
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className="input-glass px-4"
+          >
+            <option value="all">All Roles</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="input-glass px-4"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="suspended">Suspended</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
+          <select
+            value={selectedPlan}
+            onChange={(e) => setSelectedPlan(e.target.value)}
+            className="input-glass px-4"
+          >
+            <option value="all">All Plans</option>
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="pro">Pro</option>
+          </select>
+
+          <Button
+            onClick={() => {
+              setSearchQuery('')
+              setSelectedRole('all')
+              setSelectedStatus('all')
+              setSelectedPlan('all')
+              setCurrentPage(1)
+            }}
+            variant="outline"
+            className="glass text-white border-white/20 hover:bg-white/10"
+          >
+            <Filter className="mr-2 h-4 w-4" />
+            Clear
+          </Button>
+        </div>
+      </Card>
+
+      {/* Users Table */}
+      <Card className="glass-strong overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-white/5 border-b border-white/10">
+              <tr>
+                <th className="text-left p-4 text-white/60 font-medium">User</th>
+                <th className="text-left p-4 text-white/60 font-medium">Role</th>
+                <th className="text-left p-4 text-white/60 font-medium">Status</th>
+                <th className="text-left p-4 text-white/60 font-medium">Plan</th>
+                <th className="text-left p-4 text-white/60 font-medium">Tokens</th>
+                <th className="text-left p-4 text-white/60 font-medium">Verified</th>
+                <th className="text-left p-4 text-white/60 font-medium">Last Active</th>
+                <th className="text-left p-4 text-white/60 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedUsers.map((user) => (
+                <tr
+                  key={user.id}
+                  className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                >
+                  <td className="p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full bg-primary-green/20 flex items-center justify-center">
+                        <span className="text-primary-green font-medium">
                           {user.name.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-white font-medium">{user.name}</p>
-                            {user.verified && (
-                              <CheckCircle className="h-4 w-4 text-green-400" />
-                            )}
-                          </div>
-                          <p className="text-white/60 text-sm">{user.email}</p>
-                        </div>
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge className={
-                        user.role === 'admin' 
-                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                          : 'bg-white/10 text-white/80 border-white/20'
-                      }>
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge className={
-                        user.status === 'active' 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                          : user.status === 'suspended'
-                          ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                          : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                      }>
-                        {user.status}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge className={
-                        user.plan === 'pro'
-                          ? 'bg-primary-yellow/20 text-primary-yellow border-primary-yellow/30'
-                          : user.plan === 'starter'
-                          ? 'bg-primary-green/20 text-primary-green border-primary-green/30'
-                          : 'bg-white/10 text-white/80 border-white/20'
-                      }>
-                        {user.plan}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-1">
-                        <Zap className="h-4 w-4 text-primary-yellow" />
-                        <span className="text-white/80">{user.tokens}</span>
+                      <div>
+                        <p className="text-white font-medium">{user.name}</p>
+                        <p className="text-white/60 text-sm">{user.email}</p>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-white/60 text-sm">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-white/60 text-sm">
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <Badge className={
+                      user.role === 'admin'
+                        ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                    }>
+                      {user.role}
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <Badge className={
+                      user.status === 'active'
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                        : user.status === 'suspended'
+                        ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                    }>
+                      {user.status}
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <Badge className={
+                      user.plan === 'pro'
+                        ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                        : user.plan === 'starter'
+                        ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                    }>
+                      {user.plan}
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <div>
+                      <p className="text-white">{user.tokens.toLocaleString()}</p>
+                      <p className="text-white/60 text-xs">Used: {user.tokensUsed.toLocaleString()}</p>
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    {user.verified ? (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    ) : (
+                      <div className="h-5 w-5 rounded-full border border-white/20" />
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <p className="text-white/60 text-sm">
                       {new Date(user.lastActive).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2">
+                    </p>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setSelectedUser(user)}
+                        className="p-1 text-white/60 hover:text-white transition-colors"
+                        title="View Details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedUser({ ...user, isEdit: true })}
+                        className="p-1 text-white/60 hover:text-white transition-colors"
+                        title="Edit User"
+                      >
+                        <Settings className="h-4 w-4" />
+                      </button>
+                      {user.status === 'active' ? (
                         <button
-                          onClick={() => setSelectedUser(user)}
-                          className="p-1 text-white/60 hover:text-white transition-colors"
-                          title="View Details"
+                          onClick={() => handleUserAction(user.id, 'suspend')}
+                          className="p-1 text-orange-400 hover:text-orange-300 transition-colors"
+                          title="Suspend User"
                         >
-                          <Eye className="h-4 w-4" />
+                          <Ban className="h-4 w-4" />
                         </button>
+                      ) : (
                         <button
-                          onClick={() => setSelectedUser({ ...user, isEdit: true })}
-                          className="p-1 text-white/60 hover:text-white transition-colors"
-                          title="Edit User"
+                          onClick={() => handleUserAction(user.id, 'activate')}
+                          className="p-1 text-green-400 hover:text-green-300 transition-colors"
+                          title="Activate User"
                         >
-                          <Edit className="h-4 w-4" />
+                          <CheckCircle className="h-4 w-4" />
                         </button>
-                        {user.status === 'active' ? (
-                          <button
-                            onClick={() => handleUserAction(user.id, 'suspend')}
-                            className="p-1 text-yellow-400 hover:text-yellow-300 transition-colors"
-                            title="Suspend User"
-                          >
-                            <Ban className="h-4 w-4" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleUserAction(user.id, 'activate')}
-                            className="p-1 text-green-400 hover:text-green-300 transition-colors"
-                            title="Activate User"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleUserAction(user.id, 'delete')}
-                          className="p-1 text-red-400 hover:text-red-300 transition-colors"
-                          title="Delete User"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+                      )}
+                      <button
+                        onClick={() => handleUserAction(user.id, 'delete')}
+                        className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                        title="Delete User"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="p-4 border-t border-white/10 flex items-center justify-between">
+          <p className="text-white/60 text-sm">
+            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+          </p>
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              variant="outline"
+              size="sm"
+              className="glass text-white border-white/20 hover:bg-white/10 disabled:opacity-50"
+            >
+              Previous
+            </Button>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              const pageNumber = i + 1
+              return (
+                <Button
+                  key={pageNumber}
+                  onClick={() => setCurrentPage(pageNumber)}
+                  variant={currentPage === pageNumber ? 'default' : 'outline'}
+                  size="sm"
+                  className={
+                    currentPage === pageNumber
+                      ? 'btn-primary'
+                      : 'glass text-white border-white/20 hover:bg-white/10'
+                  }
+                >
+                  {pageNumber}
+                </Button>
+              )
+            })}
+            {totalPages > 5 && <span className="text-white/60">...</span>}
+            <Button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              variant="outline"
+              size="sm"
+              className="glass text-white border-white/20 hover:bg-white/10 disabled:opacity-50"
+            >
+              Next
+            </Button>
           </div>
+        </div>
+      </Card>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-white/10">
-              <div className="text-sm text-white/60">
-                Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="glass text-white border-white/20 hover:bg-white/10"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                
-                {[...Array(Math.min(5, totalPages))].map((_, i) => {
-                  const pageNum = i + 1
-                  return (
-                    <Button
-                      key={pageNum}
-                      size="sm"
-                      variant={currentPage === pageNum ? 'default' : 'outline'}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={currentPage === pageNum 
-                        ? 'btn-primary' 
-                        : 'glass text-white border-white/20 hover:bg-white/10'
-                      }
-                    >
-                      {pageNum}
-                    </Button>
-                  )
-                })}
-                
-                {totalPages > 5 && <span className="text-white/60">...</span>}
-                
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="glass text-white border-white/20 hover:bg-white/10"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* User Detail/Edit Modal */}
+      {/* User Details Modal */}
+      <AnimatePresence>
         {selectedUser && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedUser(null)}
+          >
             <motion.div
+              onClick={(e) => e.stopPropagation()}
               className="glass-strong p-6 rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
             >
               <h3 className="text-xl font-semibold text-white mb-4">
-                {selectedUser.isNew ? 'Add New User' : selectedUser.isEdit ? 'Edit User' : 'User Details'}
+                {'isNew' in selectedUser && selectedUser.isNew && Object.keys(selectedUser).length === 1 
+                  ? 'Add New User' 
+                  : isFullUser(selectedUser) && selectedUser.isEdit 
+                    ? 'Edit User' 
+                    : 'User Details'}
               </h3>
               
-              {!selectedUser.isNew && !selectedUser.isEdit ? (
+              {isFullUser(selectedUser) && !selectedUser.isEdit && !selectedUser.isNew ? (
                 // View mode
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -540,8 +536,8 @@ export default function AdminDashboard() {
                       <p className="text-white/60 text-sm">Role</p>
                       <Badge className={
                         selectedUser.role === 'admin' 
-                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/30 mt-1'
-                          : 'bg-white/10 text-white/80 border-white/20 mt-1'
+                        ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                        : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
                       }>
                         {selectedUser.role}
                       </Badge>
@@ -550,10 +546,10 @@ export default function AdminDashboard() {
                       <p className="text-white/60 text-sm">Status</p>
                       <Badge className={
                         selectedUser.status === 'active' 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30 mt-1'
+                          ? 'bg-green-500/20 text-green-400 border-green-500/30'
                           : selectedUser.status === 'suspended'
-                          ? 'bg-red-500/20 text-red-400 border-red-500/30 mt-1'
-                          : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30 mt-1'
+                          ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                          : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
                       }>
                         {selectedUser.status}
                       </Badge>
@@ -575,7 +571,7 @@ export default function AdminDashboard() {
                       <p className="text-white">{selectedUser.verified ? 'Yes' : 'No'}</p>
                     </div>
                     <div>
-                      <p className="text-white/60 text-sm">Joined</p>
+                      <p className="text-white/60 text-sm">Created At</p>
                       <p className="text-white">{new Date(selectedUser.createdAt).toLocaleString()}</p>
                     </div>
                     <div>
@@ -583,13 +579,14 @@ export default function AdminDashboard() {
                       <p className="text-white">{new Date(selectedUser.lastActive).toLocaleString()}</p>
                     </div>
                   </div>
-                  
-                  <div className="flex justify-between items-center pt-4 border-t border-white/10">
+
+                  <div className="flex justify-between pt-4 border-t border-white/10">
                     <div className="space-x-2">
                       {selectedUser.role !== 'admin' && (
                         <Button
                           onClick={() => handleUserAction(selectedUser.id, 'makeAdmin')}
-                          className="bg-purple-500/20 text-purple-400 border-purple-500/30 hover:bg-purple-500/30"
+                          variant="outline"
+                          className="glass text-white border-white/20 hover:bg-white/10"
                         >
                           <Shield className="mr-2 h-4 w-4" />
                           Make Admin
@@ -597,13 +594,13 @@ export default function AdminDashboard() {
                       )}
                       <Button
                         onClick={() => handleAddTokens(selectedUser.id, 1000)}
-                        className="bg-primary-green/20 text-primary-green border-primary-green/30 hover:bg-primary-green/30"
+                        variant="outline"
+                        className="glass text-white border-white/20 hover:bg-white/10"
                       >
                         <Zap className="mr-2 h-4 w-4" />
                         Add 1000 Tokens
                       </Button>
                     </div>
-                    
                     <Button
                       onClick={() => setSelectedUser(null)}
                       variant="outline"
@@ -620,7 +617,7 @@ export default function AdminDashboard() {
                     <div>
                       <label className="text-white/60 text-sm">Name</label>
                       <Input
-                        defaultValue={selectedUser.name || ''}
+                        defaultValue={isFullUser(selectedUser) ? selectedUser.name : ''}
                         className="input-glass mt-1"
                         placeholder="Enter name"
                       />
@@ -628,30 +625,38 @@ export default function AdminDashboard() {
                     <div>
                       <label className="text-white/60 text-sm">Email</label>
                       <Input
-                        type="email"
-                        defaultValue={selectedUser.email || ''}
+                        defaultValue={isFullUser(selectedUser) ? selectedUser.email : ''}
                         className="input-glass mt-1"
                         placeholder="Enter email"
                       />
                     </div>
                     <div>
                       <label className="text-white/60 text-sm">Role</label>
-                      <select className="input-glass mt-1 w-full" defaultValue={selectedUser.role || 'user'}>
+                      <select
+                        defaultValue={isFullUser(selectedUser) ? selectedUser.role : 'user'}
+                        className="input-glass mt-1 w-full"
+                      >
                         <option value="user">User</option>
                         <option value="admin">Admin</option>
                       </select>
                     </div>
                     <div>
                       <label className="text-white/60 text-sm">Status</label>
-                      <select className="input-glass mt-1 w-full" defaultValue={selectedUser.status || 'active'}>
+                      <select
+                        defaultValue={isFullUser(selectedUser) ? selectedUser.status : 'active'}
+                        className="input-glass mt-1 w-full"
+                      >
                         <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
                         <option value="suspended">Suspended</option>
+                        <option value="inactive">Inactive</option>
                       </select>
                     </div>
                     <div>
                       <label className="text-white/60 text-sm">Plan</label>
-                      <select className="input-glass mt-1 w-full" defaultValue={selectedUser.plan || 'free'}>
+                      <select
+                        defaultValue={isFullUser(selectedUser) ? selectedUser.plan : 'free'}
+                        className="input-glass mt-1 w-full"
+                      >
                         <option value="free">Free</option>
                         <option value="starter">Starter</option>
                         <option value="pro">Pro</option>
@@ -661,13 +666,13 @@ export default function AdminDashboard() {
                       <label className="text-white/60 text-sm">Tokens</label>
                       <Input
                         type="number"
-                        defaultValue={selectedUser.tokens || 500}
+                        defaultValue={isFullUser(selectedUser) ? selectedUser.tokens : 0}
                         className="input-glass mt-1"
                         placeholder="Enter tokens"
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end space-x-3 pt-4 border-t border-white/10">
                     <Button
                       onClick={() => setSelectedUser(null)}
@@ -678,20 +683,20 @@ export default function AdminDashboard() {
                     </Button>
                     <Button
                       onClick={() => {
-                        toast.success(selectedUser.isNew ? 'User created successfully' : 'User updated successfully')
+                        toast.success('isNew' in selectedUser && selectedUser.isNew && Object.keys(selectedUser).length === 1 ? 'User created successfully' : 'User updated successfully')
                         setSelectedUser(null)
                       }}
                       className="btn-primary"
                     >
-                      {selectedUser.isNew ? 'Create User' : 'Save Changes'}
+                      {'isNew' in selectedUser && selectedUser.isNew && Object.keys(selectedUser).length === 1 ? 'Create User' : 'Save Changes'}
                     </Button>
                   </div>
                 </div>
               )}
             </motion.div>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   )
 }

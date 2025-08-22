@@ -9,13 +9,16 @@ import { LoadingSpinner } from '@/components/ui/loading'
 import { 
   Edit2, Plus, Trash2, Copy, 
   Brain, Sparkles, Check, X,
-  Upload, Image as ImageIcon
+  Upload, Image as ImageIcon, Filter,
+  Search, BarChart3, Users, Clock
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { CHATBOT_PERSONALITIES } from '@/services/ai-service'
+import { PersonaService, type Persona } from '@/services/persona-service'
 
-interface Persona {
+// Convert database Persona to UI format
+interface UIPersona {
   id: string
+  slug: string
   name: string
   avatar: string
   avatarType: 'emoji' | 'image'
@@ -25,31 +28,137 @@ interface Persona {
   description: string
   category: string
   isActive: boolean
+  isDefault: boolean
+  voiceId?: string
+  createdAt: string
+  updatedAt: string
+}
+
+// Convert database format to UI format
+const convertToUIPersona = (persona: Persona): UIPersona => ({
+  id: persona.id,
+  slug: persona.slug,
+  name: persona.name,
+  avatar: persona.avatar_emoji || '🤖',
+  avatarType: persona.avatar_type,
+  avatarUrl: persona.avatar_url || undefined,
+  systemPrompt: persona.system_prompt,
+  greeting: persona.greeting,
+  description: persona.description || '',
+  category: persona.category,
+  isActive: persona.is_active,
+  isDefault: persona.is_default,
+  voiceId: persona.voice_id || undefined,
+  createdAt: persona.created_at,
+  updatedAt: persona.updated_at
+})
+
+// Convert UI format to database format
+const convertToDBPersona = (persona: Partial<UIPersona>): Partial<Persona> => {
+  const result: Partial<Persona> = {
+    id: persona.id,
+    slug: persona.slug,
+    name: persona.name,
+    avatar_emoji: persona.avatar,
+    avatar_type: persona.avatarType,
+    system_prompt: persona.systemPrompt,
+    greeting: persona.greeting,
+    description: persona.description,
+    category: persona.category,
+    is_active: persona.isActive,
+    is_default: persona.isDefault
+  }
+  
+  if (persona.avatarUrl) {
+    result.avatar_url = persona.avatarUrl
+  }
+  
+  if (persona.voiceId) {
+    result.voice_id = persona.voiceId
+  }
+  
+  return result
 }
 
 export default function PersonaManagementPage() {
-  const [personas, setPersonas] = useState<Persona[]>([])
+  const [personas, setPersonas] = useState<UIPersona[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState<Partial<Persona>>({})
+  const [editForm, setEditForm] = useState<Partial<UIPersona>>({})
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [showInactive, setShowInactive] = useState(false)
+  const [usageStats, setUsageStats] = useState<Record<string, {
+    totalUsages: number
+    avgRating: number
+    totalTokens: number
+  }>>({})
 
-  // Load existing personas
+  // Load personas from API
   useEffect(() => {
-    // Convert existing personas to editable format
-    const loadedPersonas: Persona[] = Object.entries(CHATBOT_PERSONALITIES).map(([key, value]) => ({
-      id: key,
-      name: value.name,
-      avatar: value.avatar,
-      avatarType: 'emoji' as const,
-      avatarUrl: undefined,
-      systemPrompt: value.systemPrompt,
-      greeting: value.greeting,
-      description: getPersonaDescription(key),
-      category: getPersonaCategory(key),
-      isActive: true
-    }))
-    setPersonas(loadedPersonas)
-  }, [])
+    loadPersonas()
+  }, [showInactive])
+
+  const loadPersonas = async () => {
+    try {
+      setIsLoading(true)
+      
+      // Get auth token (you may need to adjust this based on your auth setup)
+      const token = localStorage.getItem('supabase.auth.token')
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const url = showInactive ? '/api/personas?include_inactive=true' : '/api/personas'
+      const response = await fetch(url, { headers })
+      
+      if (response.ok) {
+        const data = await response.json()
+        const uiPersonas = data.map(convertToUIPersona)
+        setPersonas(uiPersonas)
+        
+        // Load usage stats for each persona
+        loadUsageStats(uiPersonas)
+      } else {
+        toast.error('Failed to load personas')
+      }
+    } catch (error) {
+      console.error('Error loading personas:', error)
+      toast.error('Failed to load personas')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadUsageStats = async (personaList: UIPersona[]) => {
+    const stats: Record<string, {
+      totalUsages: number
+      avgRating: number
+      totalTokens: number
+    }> = {}
+    
+    for (const persona of personaList) {
+      try {
+        const statsData = await PersonaService.getUsageStats(persona.id)
+        stats[persona.id] = {
+          totalUsages: statsData.length,
+          avgRating: statsData.length > 0 
+            ? statsData.reduce((sum, stat) => sum + (stat.rating || 0), 0) / statsData.filter(s => s.rating).length 
+            : 0,
+          totalTokens: statsData.reduce((sum, stat) => sum + stat.tokens_used, 0)
+        }
+      } catch (error) {
+        console.warn(`Failed to load stats for persona ${persona.id}:`, error)
+      }
+    }
+    
+    setUsageStats(stats)
+  }
 
   const getPersonaDescription = (id: string) => {
     const descriptions: Record<string, string> = {
@@ -71,28 +180,71 @@ export default function PersonaManagementPage() {
     return categories[id] || 'General'
   }
 
-  const handleEdit = (persona: Persona) => {
+  const handleEdit = (persona: UIPersona) => {
     setEditingId(persona.id)
     setEditForm(persona)
   }
 
   const handleSave = async () => {
-    if (!editingId) return
+    if (!editingId || !editForm.name) return
     
     setIsSaving(true)
     
     try {
-      // Simulate API call to save persona
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      const token = localStorage.getItem('supabase.auth.token')
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      }
       
-      setPersonas(prev => prev.map(p => 
-        p.id === editingId ? { ...p, ...editForm } : p
-      ))
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      let response
       
-      toast.success(`${editForm.name} updated successfully!`)
-      setEditingId(null)
-      setEditForm({})
+      if (editingId.startsWith('new-')) {
+        // Create new persona
+        const personaData = convertToDBPersona(editForm)
+        response = await fetch('/api/personas', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(personaData)
+        })
+      } else {
+        // Update existing persona
+        const personaData = convertToDBPersona(editForm)
+        response = await fetch(`/api/personas/${editingId}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(personaData)
+        })
+      }
+
+      if (response.ok) {
+        const savedPersona = await response.json()
+        const uiPersona = convertToUIPersona(savedPersona)
+        
+        if (editingId.startsWith('new-')) {
+          // Replace temporary persona with saved one
+          setPersonas(prev => prev.map(p => 
+            p.id === editingId ? uiPersona : p
+          ))
+        } else {
+          // Update existing persona
+          setPersonas(prev => prev.map(p => 
+            p.id === editingId ? { ...p, ...editForm } : p
+          ))
+        }
+        
+        toast.success(`${editForm.name} ${editingId.startsWith('new-') ? 'created' : 'updated'} successfully!`)
+        setEditingId(null)
+        setEditForm({})
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to save persona')
+      }
     } catch (error) {
+      console.error('Error saving persona:', error)
       toast.error('Failed to save persona. Please try again.')
     } finally {
       setIsSaving(false)
@@ -105,53 +257,142 @@ export default function PersonaManagementPage() {
   }
 
   const handleCreate = () => {
-    const newPersona: Persona = {
-      id: `persona-${Date.now()}`,
+    const newPersona: UIPersona = {
+      id: `new-${Date.now()}`,
+      slug: '',
       name: 'New Persona',
       avatar: '🤖',
       avatarType: 'emoji' as const,
       avatarUrl: undefined,
-      systemPrompt: '',
+      systemPrompt: 'You are a helpful AI assistant.',
       greeting: 'Hello! I\'m your new AI assistant. How can I help you today?',
       description: 'Custom AI personality',
       category: 'Custom',
-      isActive: false
+      isActive: false,
+      isDefault: false,
+      voiceId: undefined,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
     setEditingId(newPersona.id)
     setEditForm(newPersona)
     setPersonas(prev => [...prev, newPersona])
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm('Are you sure you want to delete this persona?')) {
-      setPersonas(prev => prev.filter(p => p.id !== id))
-      toast.success('Persona deleted')
+  const handleDelete = async (id: string, persona: UIPersona) => {
+    if (persona.isDefault) {
+      toast.error('Cannot delete default persona')
+      return
+    }
+
+    if (!confirm(`Are you sure you want to delete "${persona.name}"? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const token = localStorage.getItem('supabase.auth.token')
+      const headers: Record<string, string> = {}
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`/api/personas/${id}`, {
+        method: 'DELETE',
+        headers
+      })
+
+      if (response.ok) {
+        setPersonas(prev => prev.filter(p => p.id !== id))
+        toast.success('Persona deleted successfully')
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to delete persona')
+      }
+    } catch (error) {
+      console.error('Error deleting persona:', error)
+      toast.error('Failed to delete persona')
     }
   }
 
-  const handleToggleActive = (id: string) => {
-    setPersonas(prev => prev.map(p => 
-      p.id === id ? { ...p, isActive: !p.isActive } : p
-    ))
+  const handleToggleActive = async (id: string, currentState: boolean) => {
+    try {
+      const token = localStorage.getItem('supabase.auth.token')
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch(`/api/personas/${id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ is_active: !currentState })
+      })
+
+      if (response.ok) {
+        setPersonas(prev => prev.map(p => 
+          p.id === id ? { ...p, isActive: !p.isActive } : p
+        ))
+        toast.success(`Persona ${!currentState ? 'activated' : 'deactivated'}`)
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to update persona')
+      }
+    } catch (error) {
+      console.error('Error toggling persona status:', error)
+      toast.error('Failed to update persona')
+    }
   }
 
-  const handleDuplicate = (persona: Persona) => {
-    const newPersona: Persona = {
+  const handleDuplicate = (persona: UIPersona) => {
+    const newPersona: UIPersona = {
       ...persona,
-      id: `persona-${Date.now()}`,
+      id: `new-${Date.now()}`,
+      slug: `${persona.slug}-copy`,
       name: `${persona.name} (Copy)`,
-      isActive: false
+      isActive: false,
+      isDefault: false,
+      avatarUrl: undefined, // Don't copy avatar URL
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
+    setEditingId(newPersona.id)
+    setEditForm(newPersona)
     setPersonas(prev => [...prev, newPersona])
-    toast.success('Persona duplicated')
+    toast.success('Persona duplicated - edit and save to create')
   }
 
+  // Filter and search logic
+  const filteredPersonas = personas.filter(persona => {
+    const matchesSearch = persona.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         persona.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         persona.category.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = categoryFilter === 'all' || persona.category === categoryFilter
+    return matchesSearch && matchesCategory
+  })
+
+  const categories = Array.from(new Set(personas.map(p => p.category)))
+  
   const categoryColors: Record<string, string> = {
     'Business': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     'Psychology': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
     'Engineering': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
     'Productivity': 'bg-green-500/20 text-green-400 border-green-500/30',
-    'Custom': 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+    'Custom': 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    'Marketing': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+    'Education': 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30'
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-96">
+        <LoadingSpinner size="lg" />
+        <span className="ml-3 text-white/80">Loading personas...</span>
+      </div>
+    )
   }
 
   return (
@@ -161,17 +402,75 @@ export default function PersonaManagementPage() {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Persona Management</h1>
           <p className="text-white/80">Configure AI chatbot personalities and prompts</p>
+          <div className="flex items-center space-x-4 mt-2">
+            <Badge className="bg-primary-green/20 text-primary-green border-primary-green/30">
+              {personas.length} Total
+            </Badge>
+            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+              {personas.filter(p => p.isActive).length} Active
+            </Badge>
+            <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+              {personas.filter(p => p.isDefault).length} Default
+            </Badge>
+          </div>
         </div>
         
-        <Button onClick={handleCreate} className="btn-primary">
-          <Plus className="h-4 w-4 mr-2" />
-          Create New Persona
-        </Button>
+        <div className="flex items-center space-x-3">
+          <Button 
+            onClick={() => setShowInactive(!showInactive)}
+            variant="outline"
+            className="glass text-white border-white/20 hover:bg-white/10"
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            {showInactive ? 'Hide Inactive' : 'Show All'}
+          </Button>
+          <Button onClick={handleCreate} className="btn-primary">
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Persona
+          </Button>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="glass-strong p-4 rounded-2xl">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="text-white/80 text-sm mb-2 block">Search</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+              <Input
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search personas..."
+                className="input-glass pl-10"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-white/80 text-sm mb-2 block">Category</label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="input-glass w-full"
+            >
+              <option value="all">All Categories</option>
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-white/80 text-sm mb-2 block">Results</label>
+            <div className="text-white/60 text-sm pt-2">
+              {filteredPersonas.length} of {personas.length} personas
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Personas Grid */}
       <div className="grid gap-6">
-        {personas.map((persona) => {
+        {filteredPersonas.map((persona) => {
           const isEditing = editingId === persona.id
           
           return (
@@ -286,10 +585,11 @@ export default function PersonaManagementPage() {
                           <Copy className="h-4 w-4" />
                         </Button>
                         <Button
-                          onClick={() => handleToggleActive(persona.id)}
+                          onClick={() => handleToggleActive(persona.id, persona.isActive)}
                           variant="outline"
                           size="sm"
                           className="glass text-white border-white/20 hover:bg-white/10"
+                          title={persona.isActive ? 'Deactivate' : 'Activate'}
                         >
                           {persona.isActive ? (
                             <X className="h-4 w-4" />
@@ -297,14 +597,22 @@ export default function PersonaManagementPage() {
                             <Check className="h-4 w-4" />
                           )}
                         </Button>
-                        <Button
-                          onClick={() => handleDelete(persona.id)}
-                          variant="outline"
-                          size="sm"
-                          className="glass text-red-400 border-red-400/20 hover:bg-red-400/10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {!persona.isDefault && (
+                          <Button
+                            onClick={() => handleDelete(persona.id, persona)}
+                            variant="outline"
+                            size="sm"
+                            className="glass text-red-400 border-red-400/20 hover:bg-red-400/10"
+                            title="Delete persona"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                        {persona.isDefault && (
+                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                            Protected
+                          </Badge>
+                        )}
                       </>
                     )}
                   </div>
@@ -498,6 +806,8 @@ export default function PersonaManagementPage() {
                         <option value="Psychology">Psychology</option>
                         <option value="Engineering">Engineering</option>
                         <option value="Productivity">Productivity</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Education">Education</option>
                         <option value="Custom">Custom</option>
                       </select>
                     ) : (
@@ -508,42 +818,121 @@ export default function PersonaManagementPage() {
                   </div>
                   
                   <div>
-                    <label className="text-white/80 text-sm mb-2 block">Status</label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={isEditing ? editForm.isActive : persona.isActive}
-                        onChange={(e) => isEditing && setEditForm({ ...editForm, isActive: e.target.checked })}
-                        disabled={!isEditing}
-                        className="rounded border-white/20"
-                      />
-                      <span className="text-white/80">Active</span>
+                    <label className="text-white/80 text-sm mb-2 block">Status & Voice</label>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={isEditing ? editForm.isActive : persona.isActive}
+                          onChange={(e) => isEditing && setEditForm({ ...editForm, isActive: e.target.checked })}
+                          disabled={!isEditing}
+                          className="rounded border-white/20"
+                        />
+                        <span className="text-white/80">Active</span>
+                      </div>
+                      {isEditing && (
+                        <div>
+                          <label className="text-white/80 text-xs mb-1 block">Voice ID (Optional)</label>
+                          <select
+                            value={editForm.voiceId || ''}
+                            onChange={(e) => setEditForm({ ...editForm, voiceId: e.target.value || undefined })}
+                            className="input-glass w-full text-sm"
+                          >
+                            <option value="">No Voice</option>
+                            <option value="echo">Echo</option>
+                            <option value="alloy">Alloy</option>
+                            <option value="fable">Fable</option>
+                            <option value="onyx">Onyx</option>
+                            <option value="nova">Nova</option>
+                            <option value="shimmer">Shimmer</option>
+                          </select>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Preview Section */}
+              {/* Preview and Stats Section */}
               {!isEditing && (
-                <div className="p-6 bg-white/5 border-t border-white/10">
-                  <h3 className="text-white font-medium mb-3">Preview Chat</h3>
-                  <div className="glass p-4 rounded-lg space-y-3">
-                    <div className="flex items-start space-x-3">
-                      <div className="flex-shrink-0">
-                        {persona.avatarType === 'image' && persona.avatarUrl ? (
-                          <img 
-                            src={persona.avatarUrl} 
-                            alt={persona.name} 
-                            className="w-8 h-8 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div className="text-2xl">{persona.avatar}</div>
-                        )}
+                <div className="p-6 bg-white/5 border-t border-white/10 space-y-6">
+                  {/* Usage Statistics */}
+                  {usageStats[persona.id] && (
+                    <div>
+                      <h3 className="text-white font-medium mb-3 flex items-center">
+                        <BarChart3 className="h-4 w-4 mr-2 text-primary-green" />
+                        Usage Statistics
+                      </h3>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="glass p-3 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-primary-green">
+                            {usageStats[persona.id].totalUsages || 0}
+                          </div>
+                          <div className="text-white/60 text-xs">Total Chats</div>
+                        </div>
+                        <div className="glass p-3 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-yellow-400">
+                            {usageStats[persona.id].avgRating ? usageStats[persona.id].avgRating.toFixed(1) : 'N/A'}
+                          </div>
+                          <div className="text-white/60 text-xs">Avg Rating</div>
+                        </div>
+                        <div className="glass p-3 rounded-lg text-center">
+                          <div className="text-2xl font-bold text-blue-400">
+                            {(usageStats[persona.id].totalTokens || 0).toLocaleString()}
+                          </div>
+                          <div className="text-white/60 text-xs">Tokens Used</div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-white/60 text-sm">{persona.name}</p>
-                        <p className="text-white/90 mt-1">{persona.greeting}</p>
+                    </div>
+                  )}
+
+                  {/* Chat Preview */}
+                  <div>
+                    <h3 className="text-white font-medium mb-3 flex items-center">
+                      <Users className="h-4 w-4 mr-2 text-primary-green" />
+                      Chat Preview
+                    </h3>
+                    <div className="glass p-4 rounded-lg space-y-3">
+                      <div className="flex items-start space-x-3">
+                        <div className="flex-shrink-0">
+                          {persona.avatarType === 'image' && persona.avatarUrl ? (
+                            <img 
+                              src={persona.avatarUrl} 
+                              alt={persona.name} 
+                              className="w-8 h-8 rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="text-2xl">{persona.avatar}</div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <p className="text-white/60 text-sm">{persona.name}</p>
+                            {persona.voiceId && (
+                              <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
+                                🔊 {persona.voiceId}
+                              </Badge>
+                            )}
+                            <div className="text-white/40 text-xs flex items-center">
+                              <Clock className="h-3 w-3 mr-1" />
+                              {new Date(persona.updatedAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <p className="text-white/90 mt-1">{persona.greeting}</p>
+                        </div>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Technical Details */}
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span className="text-white/50">Slug:</span>
+                      <span className="text-white/80 ml-2 font-mono">{persona.slug}</span>
+                    </div>
+                    <div>
+                      <span className="text-white/50">ID:</span>
+                      <span className="text-white/80 ml-2 font-mono">{persona.id}</span>
                     </div>
                   </div>
                 </div>
@@ -552,6 +941,31 @@ export default function PersonaManagementPage() {
           )
         })}
       </div>
+
+      {/* No results message */}
+      {filteredPersonas.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-6xl mb-4">🔍</div>
+          <h3 className="text-xl font-semibold text-white mb-2">No personas found</h3>
+          <p className="text-white/60 mb-4">
+            {searchTerm || categoryFilter !== 'all' 
+              ? 'Try adjusting your search or filters' 
+              : 'Create your first persona to get started'}
+          </p>
+          {(searchTerm || categoryFilter !== 'all') && (
+            <Button 
+              onClick={() => {
+                setSearchTerm('')
+                setCategoryFilter('all')
+              }}
+              variant="outline"
+              className="glass text-white border-white/20 hover:bg-white/10"
+            >
+              Clear Filters
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Instructions */}
       <motion.div
@@ -608,6 +1022,17 @@ Always provide [TYPE] advice.`}
               </pre>
             </div>
           </div>
+        </div>
+        
+        <div className="mt-6 pt-4 border-t border-white/10">
+          <h4 className="text-white font-medium mb-2">Quick Tips</h4>
+          <ul className="space-y-1 text-sm text-white/70">
+            <li>• Use specific, actionable language in system prompts</li>
+            <li>• Test personas in the playground before activating</li>
+            <li>• Monitor usage statistics to optimize performance</li>
+            <li>• Keep greetings conversational and welcoming</li>
+            <li>• Assign appropriate voice IDs for text-to-speech</li>
+          </ul>
         </div>
       </motion.div>
     </div>

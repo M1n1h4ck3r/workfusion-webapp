@@ -35,8 +35,8 @@ export default function AIModelsPage() {
   const [testPrompt, setTestPrompt] = useState('Explain quantum computing in simple terms')
   const [healthStatus, setHealthStatus] = useState<Map<string, {
     status: 'healthy' | 'degraded' | 'down'
-    latency: number
-    lastCheck: Date
+    responseTime: number
+    errorRate: number
   }>>(new Map())
   const [isMonitoring, setIsMonitoring] = useState(false)
 

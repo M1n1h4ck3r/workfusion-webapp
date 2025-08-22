@@ -21,7 +21,8 @@
       "Bash(git push:*)",
       "Bash(powershell:*)",
       "Bash(move:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": [],

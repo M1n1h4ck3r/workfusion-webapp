@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PersonaService } from '@/services/persona-service'
-import { MinIOService } from '@/services/minio-service-server'
+import { BackblazeService } from '@/services/backblaze-service'
 
 // POST /api/personas/[id]/avatar - Upload avatar
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const formData = await request.formData()
     const file = formData.get('file') as File
     
@@ -40,9 +41,9 @@ export async function POST(
     const arrayBuffer = await file.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     
-    // Upload to MinIO directly from API route
-    const result = await MinIOService.uploadAvatar(
-      params.id,
+    // Upload to Backblaze B2 directly from API route
+    const result = await BackblazeService.uploadAvatar(
+      id,
       buffer,
       file.name,
       {
@@ -67,7 +68,7 @@ export async function POST(
           thumbnailUrl: result.thumbnailUrl
         }
       })
-      .eq('id', params.id)
+      .eq('id', id)
     
     const avatarUrl = result.url
     
@@ -94,11 +95,12 @@ export async function POST(
 // DELETE /api/personas/[id]/avatar - Delete avatar
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     // Get persona to find current avatar URL
-    const persona = await PersonaService.getPersonaById(params.id)
+    const persona = await PersonaService.getPersonaById(id)
     
     if (!persona) {
       return NextResponse.json(
@@ -118,8 +120,8 @@ export async function DELETE(
     const urlParts = persona.avatar_url.split('/')
     const filename = urlParts.slice(urlParts.indexOf('avatars')).join('/')
     
-    // Delete from MinIO
-    const success = await MinIOService.deleteAvatar(params.id, filename)
+    // Delete from Backblaze B2
+    const success = await BackblazeService.deleteAvatar(id, filename)
     
     if (success) {
       // Update persona in database
@@ -136,7 +138,7 @@ export async function DELETE(
           avatar_url: null,
           metadata: {}
         })
-        .eq('id', params.id)
+        .eq('id', id)
     }
     
     if (!success) {
@@ -161,10 +163,11 @@ export async function DELETE(
 // GET /api/personas/[id]/avatar - Get avatar URL
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const persona = await PersonaService.getPersonaById(params.id)
+    const { id } = await params
+    const persona = await PersonaService.getPersonaById(id)
     
     if (!persona) {
       return NextResponse.json(

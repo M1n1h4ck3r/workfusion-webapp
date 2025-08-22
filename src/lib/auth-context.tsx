@@ -112,14 +112,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
       
-      // Create demo user
+      // Create demo user with admin privileges for testing
       const demoUser: User = {
         id: 'demo-user-' + Date.now(),
         email: email,
-        name: 'Demo User',
-        avatar: `https://ui-avatars.com/api/?name=Demo+User&background=4ADE80&color=fff`,
+        name: 'Demo Admin',
+        avatar: `https://ui-avatars.com/api/?name=Demo+Admin&background=4ADE80&color=fff`,
         tokens: 500,
-        role: 'user',
+        role: 'admin', // Grant admin access for demo
         createdAt: new Date().toISOString()
       }
       
@@ -160,14 +160,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1500))
       
-      // Create demo user
+      // Create demo user with admin privileges for testing
       const demoUser: User = {
         id: 'demo-user-' + Date.now(),
         email: email,
         name: name,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=4ADE80&color=fff`,
         tokens: 500,
-        role: 'user',
+        role: 'admin', // Grant admin access for demo
         createdAt: new Date().toISOString()
       }
       
@@ -210,14 +210,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Simulate OAuth flow for demo
       await new Promise(resolve => setTimeout(resolve, 1500))
       
-      // Create demo user
+      // Create demo user with admin privileges for testing
       const demoUser: User = {
         id: 'demo-user-' + Date.now(),
         email: `demo@${provider}.com`,
-        name: `Demo ${provider.charAt(0).toUpperCase() + provider.slice(1)} User`,
-        avatar: `https://ui-avatars.com/api/?name=Demo+User&background=4ADE80&color=fff`,
+        name: `Demo ${provider.charAt(0).toUpperCase() + provider.slice(1)} Admin`,
+        avatar: `https://ui-avatars.com/api/?name=Demo+Admin&background=4ADE80&color=fff`,
         tokens: 500,
-        role: 'user',
+        role: 'admin', // Grant admin access for demo
         createdAt: new Date().toISOString()
       }
       
