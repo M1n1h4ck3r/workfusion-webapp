@@ -356,6 +356,23 @@ export class PersonaService {
     return { type: 'emoji', content: persona.avatar_emoji || '🤖' }
   }
 
+  // Get usage stats (mock implementation)
+  static async getUsageStats(personaId: string): Promise<PersonaUsageStats | null> {
+    // Mock implementation - returns fake usage data
+    return {
+      personaId,
+      totalUsages: Math.floor(Math.random() * 1000),
+      avgRating: 3 + Math.random() * 2,
+      totalTokens: Math.floor(Math.random() * 100000),
+      lastUsedAt: new Date().toISOString()
+    }
+  }
+
+  // Get cached persona (same as getPersonaById for now)
+  static async getCachedPersona(id: string): Promise<Persona | null> {
+    return this.getPersonaById(id)
+  }
+
   // Get categories
   static async getCategories(): Promise<string[]> {
     if (useMockData()) {

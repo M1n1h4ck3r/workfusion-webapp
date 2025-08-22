@@ -544,7 +544,8 @@ export class AutonomousAgentSystem {
         input: step.input,
         expectedOutput: step.expectedOutput,
         priority: 1,
-        maxRetries: 1
+        maxRetries: 1,
+        retries: 0
       }
 
       const taskId = await this.deployAgent(step.agentId, task)

@@ -18,7 +18,7 @@ import {
   Sparkles,
   Gift,
   AlertCircle,
-  PaypalIcon as Paypal,
+  Wallet as Paypal,
   Calendar,
   BarChart3,
   Settings,
