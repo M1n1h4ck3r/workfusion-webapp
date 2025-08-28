@@ -268,7 +268,7 @@ export default function WhatsAppPage() {
                 </Button>
                 <Button onClick={handleQRScanned} className="btn-primary flex-1">
                   <Smartphone className="mr-2 h-4 w-4" />
-                  I&apos;ve Scanned It
+                  I've Scanned It
                 </Button>
               </div>
             </div>

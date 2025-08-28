@@ -252,7 +252,7 @@ export default function PrivacyPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.9 }}
             >
-              <h2 className="text-2xl font-semibold text-white mb-4">8. Children&apos;s Privacy</h2>
+              <h2 className="text-2xl font-semibold text-white mb-4">8. Children's Privacy</h2>
               <div className="text-white/80 space-y-3">
                 <p>
                   Our Service is not intended for children under 18. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.

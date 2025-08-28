@@ -65,7 +65,7 @@ export default function DashboardPage() {
             Welcome back, {user?.name || 'User'}!
           </h1>
           <p className="text-white/80">
-            Here&apos;s an overview of your AI playground usage and statistics.
+            Here's an overview of your AI playground usage and statistics.
           </p>
         </div>
         
@@ -122,7 +122,7 @@ export default function DashboardPage() {
             </Badge>
           </div>
           
-          <h3 className="text-white/80 text-sm mb-1">Today&apos;s Usage</h3>
+          <h3 className="text-white/80 text-sm mb-1">Today's Usage</h3>
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-white">{stats.usage.today}</span>
             <span className="text-white/60 text-sm">tokens</span>

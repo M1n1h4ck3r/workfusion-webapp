@@ -68,7 +68,7 @@ export default function ContactPage() {
               Get in Touch
             </h1>
             <p className="text-xl text-white/80 text-center mb-12 max-w-2xl mx-auto">
-              Have questions about our AI solutions? We&apos;d love to hear from you.
+              Have questions about our AI solutions? We'd love to hear from you.
             </p>
           
           <div className="grid md:grid-cols-2 gap-12">

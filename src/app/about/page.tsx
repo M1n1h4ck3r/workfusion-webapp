@@ -13,7 +13,7 @@ export default function AboutPage() {
     {
       icon: Users,
       title: "Customer First",
-      description: "We prioritize our customers&apos; success and satisfaction in everything we do."
+      description: "We prioritize our customers' success and satisfaction in everything we do."
     },
     {
       icon: Lightbulb,
@@ -85,7 +85,7 @@ export default function AboutPage() {
               </h1>
               
               <p className="text-xl text-white/80 max-w-3xl mx-auto">
-                We&apos;re on a mission to democratize AI technology, making it accessible and 
+                We're on a mission to democratize AI technology, making it accessible and 
                 powerful for businesses of all sizes. Our platform combines cutting-edge AI 
                 with intuitive design to deliver transformative solutions.
               </p>
