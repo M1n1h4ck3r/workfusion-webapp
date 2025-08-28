@@ -6,6 +6,9 @@
   /* Clean Modern Design System */
   --primary: #2563EB;        /* Clean blue primary */
   --primary-hover: #1D4ED8;  /* Darker blue for hover */
+  --primary-green: #10B981;  /* Emerald green */
+  --primary-yellow: #FCD34D; /* Golden yellow */
+  --primary-orange: #FB923C; /* Warm orange */
   --secondary: #64748B;      /* Neutral slate */
   --accent: #10B981;         /* Emerald accent */
   --background: #0F172A;     /* Deep slate background */
@@ -15,7 +18,7 @@
   --text-primary: #F8FAFC;   /* High contrast text */
   --text-secondary: #CBD5E1; /* Medium contrast text */
   --text-muted: #94A3B8;     /* Muted text */
-  --gradient-primary: linear-gradient(135deg, #2563EB 0%, #10B981 100%);
+  --gradient-primary: linear-gradient(135deg, #10B981 0%, #FB923C 100%);
   --gradient-subtle: linear-gradient(135deg, #1E293B 0%, #334155 100%);
   
   /* Shadcn UI Variables */
@@ -85,7 +88,7 @@
   body {
     background: var(--background);
     color: var(--text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -159,7 +162,28 @@
   
   /* Gradient Text */
   .gradient-text {
-    @apply bg-gradient-primary bg-clip-text text-transparent;
+    background: linear-gradient(135deg, #10B981 0%, #FB923C 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: none;
+    font-weight: 700;
+    filter: contrast(1.3) saturate(1.2);
+    display: inline-block;
+  }
+  
+  /* Fallback for browsers that don't support background-clip */
+  @supports not (background-clip: text) or not (-webkit-background-clip: text) {
+    .gradient-text {
+      background: none;
+      color: #10B981;
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    }
+  }
+  
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
   }
   
   /* Animated Gradient Background */
@@ -315,6 +339,35 @@
   
   .text-xs-contrast {
     color: rgba(255, 255, 255, 0.85);
+  }
+  
+  /* Primary Color Utilities */
+  .text-primary-green {
+    color: var(--primary-green);
+  }
+  
+  .text-primary-yellow {
+    color: var(--primary-yellow);
+  }
+  
+  .text-primary-orange {
+    color: var(--primary-orange);
+  }
+  
+  .bg-primary-green {
+    background-color: var(--primary-green);
+  }
+  
+  .bg-primary-yellow {
+    background-color: var(--primary-yellow);
+  }
+  
+  .bg-primary-orange {
+    background-color: var(--primary-orange);
+  }
+  
+  .bg-dark-surface {
+    background-color: var(--surface);
   }
   /* Animation Delays */
   .animate-delay-100 {

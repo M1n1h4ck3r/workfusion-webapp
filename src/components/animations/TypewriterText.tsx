@@ -56,11 +56,12 @@ export function TypewriterText({
       animate={{ opacity: 1 }}
       transition={{ delay, duration: 0.5 }}
     >
-      {/* Enhanced text with subtle glow */}
+      {/* Enhanced text with clear visibility */}
       <motion.span
-        className="relative"
+        className={`relative ${className}`}
         style={{
-          textShadow: `0 0 20px ${cursorColor}40, 0 0 40px ${cursorColor}20`,
+          textShadow: `0 2px 4px rgba(0, 0, 0, 0.3)`,
+          filter: 'contrast(1.1) saturate(1.1)',
         }}
       >
         {displayText.split('').map((char, index) => (

@@ -54,7 +54,7 @@ export function Footer() {
                 <Link
                   key={social.name}
                   href={social.href}
-                  className="text-white/60 hover:text-primary-green transition-colors duration-200"
+                  className="text-white/60 hover:text-green-400 transition-colors duration-200"
                   aria-label={social.name}
                 >
                   <social.icon className="h-5 w-5" />
@@ -69,14 +69,14 @@ export function Footer() {
             <div className="space-y-3">
               <a 
                 href="mailto:info@workfusion.pro" 
-                className="flex items-center space-x-3 text-white/60 hover:text-primary-green transition-colors duration-200 group"
+                className="flex items-center space-x-3 text-white/60 hover:text-green-400 transition-colors duration-200 group"
               >
                 <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
                 <span className="text-sm">info@workfusion.pro</span>
               </a>
               <a 
                 href="tel:+18774503224" 
-                className="flex items-center space-x-3 text-white/60 hover:text-primary-green transition-colors duration-200 group"
+                className="flex items-center space-x-3 text-white/60 hover:text-green-400 transition-colors duration-200 group"
               >
                 <Phone className="h-4 w-4 group-hover:scale-110 transition-transform" />
                 <span className="text-sm">+1 (877) 450-3224</span>
@@ -99,7 +99,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link 
                     href={link.href} 
-                    className="text-white/60 hover:text-primary-green transition-colors duration-200 text-sm block py-1"
+                    className="text-white/60 hover:text-green-400 transition-colors duration-200 text-sm block py-1"
                   >
                     {link.name}
                   </Link>
@@ -116,7 +116,7 @@ export function Footer() {
                 <li key={link.name}>
                   <Link 
                     href={link.href} 
-                    className="text-white/60 hover:text-primary-green transition-colors duration-200 text-sm block py-1"
+                    className="text-white/60 hover:text-green-400 transition-colors duration-200 text-sm block py-1"
                   >
                     {link.name}
                   </Link>
@@ -140,7 +140,7 @@ export function Footer() {
             <div className="flex items-center space-x-4 text-xs text-white/40">
               <span>Made with</span>
               <div className="flex items-center space-x-1">
-                <span className="text-primary-green">♥</span>
+                <span className="text-green-400">♥</span>
                 <span>by Workfusion Team</span>
               </div>
             </div>

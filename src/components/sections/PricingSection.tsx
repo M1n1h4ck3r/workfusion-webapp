@@ -103,7 +103,7 @@ export function PricingSection() {
         <div className="absolute inset-0 mesh-gradient opacity-20" />
       </div>
 
-      <div className="container mx-auto relative z-10">
+      <div className="container mx-auto relative z-10 max-w-8xl px-4">
         {/* Header */}
         <motion.div 
           className="text-center mb-16"
@@ -151,7 +151,7 @@ export function PricingSection() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-12 lg:gap-16 xl:gap-20 mb-32">
           {pricingPlans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -163,12 +163,12 @@ export function PricingSection() {
             >
               <motion.div
                 className={`relative w-full h-full preserve-3d cursor-pointer ${
-                  plan.popular ? 'scale-105' : ''
+                  plan.popular ? 'scale-[1.02]' : ''
                 }`}
                 animate={{ rotateY: flippedCard === index ? 180 : 0 }}
                 transition={{ duration: 0.6 }}
                 onClick={() => handleCardFlip(index)}
-                whileHover={{ scale: plan.popular ? 1.05 : 1.02 }}
+                whileHover={{ scale: plan.popular ? 1.03 : 1.01 }}
               >
                 {/* Front of card */}
                 <div className={`absolute inset-0 w-full h-full backface-hidden ${
@@ -316,61 +316,63 @@ export function PricingSection() {
         </div>
 
         {/* Token Packages */}
-        <motion.div
-          className="glass-strong p-8 md:p-12 rounded-3xl"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold mb-4">
-              Need More <span className="gradient-text">Tokens</span>?
-            </h3>
-            <p className="text-white/70">
-              Purchase additional tokens at any time with our flexible top-up packages.
-            </p>
-          </div>
+        <div className="mt-96 pt-64">
+          <motion.div
+            className="glass-strong p-8 md:p-12 rounded-3xl relative z-10"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <div className="text-center mb-8">
+              <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                Need More <span className="gradient-text">Tokens</span>?
+              </h3>
+              <p className="text-white/70">
+                Purchase additional tokens at any time with our flexible top-up packages.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {tokenPackages.map((pkg, index) => (
-              <motion.div
-                key={index}
-                className={`glass p-6 rounded-xl text-center ${
-                  pkg.popular ? 'border-2 border-primary-yellow/50' : ''
-                }`}
-                whileHover={{ scale: 1.05 }}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                {pkg.popular && (
-                  <Badge className="mb-3 bg-primary-yellow text-black">
-                    Best Value
-                  </Badge>
-                )}
-                <div className="text-2xl font-bold gradient-text mb-2">
-                  {pkg.amount}
-                </div>
-                <div className="text-white/60 text-sm mb-2">
-                  tokens
-                </div>
-                {pkg.bonus !== "0" && (
-                  <div className="text-primary-green text-sm font-medium mb-3">
-                    +{pkg.bonus} bonus tokens
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+              {tokenPackages.map((pkg, index) => (
+                <motion.div
+                  key={index}
+                  className={`glass p-8 rounded-xl text-center ${
+                    pkg.popular ? 'border-2 border-primary-yellow/50' : ''
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  {pkg.popular && (
+                    <Badge className="mb-3 bg-primary-yellow text-black">
+                      Best Value
+                    </Badge>
+                  )}
+                  <div className="text-2xl font-bold gradient-text mb-2">
+                    {pkg.amount}
                   </div>
-                )}
-                <div className="text-xl font-semibold text-white mb-4">
-                  ${pkg.price}
-                </div>
-                <Button size="sm" variant="outline" className="w-full glass text-white border-white/20 hover:bg-white/10">
-                  Buy Now
-                </Button>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+                  <div className="text-white/60 text-sm mb-2">
+                    tokens
+                  </div>
+                  {pkg.bonus !== "0" && (
+                    <div className="text-primary-green text-sm font-medium mb-3">
+                      +{pkg.bonus} bonus tokens
+                    </div>
+                  )}
+                  <div className="text-xl font-semibold text-white mb-6">
+                    ${pkg.price}
+                  </div>
+                  <Button size="sm" variant="outline" className="w-full glass text-white border-white/20 hover:bg-white/10">
+                    Buy Now
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
 
         {/* FAQ Section */}
         <div className="text-center mt-16">
