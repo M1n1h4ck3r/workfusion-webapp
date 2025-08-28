@@ -25,7 +25,12 @@
       "Bash(node:*)",
       "WebFetch(domain:lucide.dev)",
       "WebSearch",
-      "Bash(npm update:*)"
+      "Bash(npm update:*)",
+      "Bash(taskkill:*)",
+      "Read(C:\\Users\\minei\\Pictures/**)",
+      "Read(C:\\Users\\minei\\Pictures/**)",
+      "Bash(npx vercel:*)",
+      "Read(C:\\Users\\minei\\Pictures/**)"
     ],
     "deny": [],
     "ask": [],

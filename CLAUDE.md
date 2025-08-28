@@ -58,7 +58,7 @@ npm run lint
 - **Styling**: Tailwind CSS 4.x with PostCSS
 - **Linting**: ESLint 9.x with Next.js config
 - **Database**: Supabase (PostgreSQL) for authentication and data storage
-- **Object Storage**: MinIO for avatar images and file uploads
+- **Object Storage**: Backblaze B2 for avatar images and file uploads
 - **State Management**: Zustand for client-side state
 - **AI Integration**: OpenAI/Anthropic SDK for chat functionality
 - **Image Processing**: Sharp for avatar optimization
@@ -84,7 +84,7 @@ src/
 ├── services/          # Business logic and API services
 │   ├── ai-service.ts  # AI provider integration
 │   ├── persona-service.ts  # Persona management
-│   └── minio-service.ts    # MinIO storage operations
+│   └── backblaze-service.ts    # Backblaze B2 storage operations
 ├── store/             # Zustand state stores
 │   └── token-store.ts # Token management
 └── lib/               # Utility functions and helpers
@@ -112,67 +112,40 @@ src/
 
 This is the web application for Workfusion.pro AI Agency. The project is in early development stage with the basic Next.js boilerplate setup complete. Documentation and planning materials are available in `public/project_documents/`.
 
-## MinIO Setup and Configuration
+## Backblaze B2 Storage Configuration
 
-### Installation
+### Setup
 
-1. **Using Docker (Recommended)**:
-```bash
-# Run MinIO container
-docker run -d \
-  -p 9000:9000 \
-  -p 9001:9001 \
-  --name minio \
-  -e "MINIO_ROOT_USER=minioadmin" \
-  -e "MINIO_ROOT_PASSWORD=minioadmin" \
-  -v ~/minio/data:/data \
-  quay.io/minio/minio server /data --console-address ":9001"
-```
+1. **Create Backblaze B2 Account**:
+   - Sign up at https://www.backblaze.com/b2/cloud-storage.html
+   - Create a new bucket for avatar storage
+   - Generate application keys with read/write permissions
 
-2. **Using Binary (Alternative)**:
-```bash
-# Download MinIO binary
-wget https://dl.min.io/server/minio/release/linux-amd64/minio
-chmod +x minio
-
-# Run MinIO server
-./minio server ~/minio/data --console-address :9001
-```
-
-### Configuration
-
-1. **Environment Variables**:
-Copy `.env.minio.example` to `.env.local` and update:
+2. **Environment Variables**:
+Add to your `.env.local`:
 ```env
-# MinIO Server Configuration
-MINIO_ENDPOINT=localhost           # MinIO server endpoint
-MINIO_PORT=9000                   # API port
-MINIO_USE_SSL=false              # Use HTTPS
-MINIO_ACCESS_KEY=minioadmin      # Access key
-MINIO_SECRET_KEY=minioadmin      # Secret key
-MINIO_BUCKET_NAME=persona-avatars # Bucket name
-MINIO_REGION=us-east-1           # AWS S3 region
-
-# MinIO Console (optional)
-MINIO_CONSOLE_PORT=9001          # Web UI port
-
-# Public URL Configuration
-MINIO_PUBLIC_URL=http://localhost:9000  # Full URL for serving images
+# Backblaze B2 Configuration
+B2_KEY_ID=your_application_key_id
+B2_APPLICATION_KEY=your_application_key
+B2_BUCKET_NAME=workfusion-avatars
+B2_BUCKET_ID=your_bucket_id
+B2_REGION=us-west-002
+B2_ENDPOINT=s3.us-west-002.backblazeb2.com
 
 # Image Processing Options
-MINIO_MAX_IMAGE_SIZE=5242880    # Max size in bytes (5MB)
-MINIO_IMAGE_QUALITY=85           # JPEG/WebP quality
-MINIO_THUMBNAIL_SIZE=150         # Thumbnail size in pixels
+B2_MAX_IMAGE_SIZE=5242880      # Max size in bytes (5MB)
+B2_IMAGE_QUALITY=85            # JPEG/WebP quality
+B2_THUMBNAIL_SIZE=150          # Thumbnail size in pixels
 ```
 
-2. **Access MinIO Console**:
-- URL: `http://localhost:9001`
-- Username: `minioadmin`
-- Password: `minioadmin`
+3. **Bucket Configuration**:
+   - Set bucket type to "Public" for avatar images
+   - Configure CORS settings if needed for web access
+   - Enable lifecycle rules for automatic cleanup (optional)
 
-### MinIO Service Features
+### Backblaze B2 Service Features
 
-The `minio-service.ts` provides:
+The `backblaze-service.ts` provides:
 
 1. **Avatar Management**:
    - Upload with automatic image processing
@@ -187,29 +160,30 @@ The `minio-service.ts` provides:
    - Bulk operations (delete, copy)
 
 3. **Migration Tools**:
-   - Migrate avatars from Supabase to MinIO
+   - Migrate avatars from Supabase to Backblaze B2
+   - Migrate from MinIO to Backblaze B2
    - Automatic format conversion
    - Batch migration support
 
-### Production Deployment
+### Production Configuration
 
 1. **Security**:
-   - Change default credentials
-   - Enable SSL/TLS
-   - Configure firewall rules
-   - Set up access policies
+   - Use restricted application keys
+   - Configure bucket policies
+   - Enable encryption at rest
+   - Set up access controls
 
-2. **High Availability**:
-   - Deploy MinIO in distributed mode
-   - Use multiple drives/nodes
-   - Configure load balancer
-   - Set up data replication
+2. **Performance**:
+   - Use CDN for global distribution
+   - Configure caching headers
+   - Optimize image formats
+   - Implement progressive loading
 
 3. **Monitoring**:
-   - Enable metrics endpoint
-   - Configure Prometheus/Grafana
-   - Set up alerts
-   - Monitor storage usage
+   - Monitor storage usage and costs
+   - Set up alerts for quota limits
+   - Track API usage and errors
+   - Configure backup policies
 
 ### API Usage Examples
 
@@ -234,17 +208,18 @@ const avatar = await fetch(`/api/personas/${personaId}/avatar`).then(r => r.json
 
 ### Troubleshooting
 
-1. **Connection Issues**:
-   - Verify MinIO is running: `docker ps` or `ps aux | grep minio`
-   - Check ports: `netstat -an | grep 9000`
-   - Test connectivity: `curl http://localhost:9000/minio/health/live`
+1. **Authentication Issues**:
+   - Verify application key ID and secret
+   - Check bucket permissions
+   - Test with Backblaze B2 CLI tools
 
-2. **Permission Errors**:
-   - Check bucket policy settings
-   - Verify access/secret keys
-   - Review CORS configuration
+2. **Upload Failures**:
+   - Check file size limits (5MB default)
+   - Verify supported formats (JPEG, PNG, WebP, GIF)
+   - Review network connectivity
+   - Check bucket quotas and billing status
 
-3. **Image Upload Failures**:
-   - Check file size limits
-   - Verify supported formats
-   - Review MinIO logs: `docker logs minio`
+3. **API Issues**:
+   - Monitor rate limits (Backblaze B2 limits)
+   - Check S3-compatible API endpoint
+   - Verify bucket region settings

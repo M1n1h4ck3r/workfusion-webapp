@@ -89,11 +89,11 @@ const mockPersonas: Persona[] = [
 ]
 
 // In-memory storage for development
-let devPersonas: Persona[] = [...mockPersonas]
+const devPersonas: Persona[] = [...mockPersonas]
 let nextId = 4
 
 // Helper to check if we should use mock data
-const useMockData = () => {
+const shouldUseMockData = (): boolean => {
   // Always use mock data in development for now
   return process.env.NODE_ENV === 'development'
 }
@@ -103,7 +103,7 @@ export class PersonaService {
   // Get all active personas
   static async getActivePersonas(): Promise<Persona[]> {
     // Use mock data in development if Supabase is not available
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       return devPersonas.filter(p => p.is_active)
     }
 
@@ -125,7 +125,7 @@ export class PersonaService {
 
   // Get all personas including inactive (admin only)
   static async getAllPersonas(): Promise<Persona[]> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       return devPersonas
     }
 
@@ -145,7 +145,7 @@ export class PersonaService {
 
   // Get persona by slug
   static async getPersonaBySlug(slug: string): Promise<Persona | null> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       return devPersonas.find(p => p.slug === slug && p.is_active) || null
     }
 
@@ -166,7 +166,7 @@ export class PersonaService {
 
   // Get persona by ID
   static async getPersonaById(id: string): Promise<Persona | null> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       return devPersonas.find(p => p.id === id) || null
     }
 
@@ -186,7 +186,7 @@ export class PersonaService {
 
   // Create new persona (admin only)
   static async createPersona(persona: Partial<Persona>): Promise<Persona | null> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       const newPersona: Persona = {
         id: String(nextId++),
         slug: persona.slug || persona.name?.toLowerCase().replace(/\s+/g, '-') || 'persona',
@@ -226,7 +226,7 @@ export class PersonaService {
 
   // Update persona (admin only)
   static async updatePersona(id: string, updates: Partial<Persona>): Promise<Persona | null> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       const index = devPersonas.findIndex(p => p.id === id)
       if (index === -1) return null
       
@@ -255,7 +255,7 @@ export class PersonaService {
 
   // Delete persona (admin only)
   static async deletePersona(id: string): Promise<boolean> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       const index = devPersonas.findIndex(p => p.id === id)
       if (index === -1) return false
       
@@ -278,7 +278,7 @@ export class PersonaService {
 
   // Get default persona
   static async getDefaultPersona(): Promise<Persona | null> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       return devPersonas.find(p => p.is_default && p.is_active) || devPersonas[0] || null
     }
 
@@ -301,7 +301,7 @@ export class PersonaService {
 
   // Get personas by category
   static async getPersonasByCategory(category: string): Promise<Persona[]> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       return devPersonas.filter(p => p.category === category && p.is_active)
     }
 
@@ -322,7 +322,7 @@ export class PersonaService {
 
   // Search personas
   static async searchPersonas(query: string): Promise<Persona[]> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       const lowerQuery = query.toLowerCase()
       return devPersonas.filter(p => 
         p.is_active && (
@@ -375,7 +375,7 @@ export class PersonaService {
 
   // Get categories
   static async getCategories(): Promise<string[]> {
-    if (useMockData()) {
+    if (shouldUseMockData()) {
       const categories = new Set(devPersonas.filter(p => p.is_active).map(p => p.category))
       return Array.from(categories).sort()
     }
