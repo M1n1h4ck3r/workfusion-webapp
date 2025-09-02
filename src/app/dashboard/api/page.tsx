@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -62,7 +63,7 @@ interface APIEndpoint {
   status: 'healthy' | 'degraded' | 'down'
 }
 
-export default function APIManagementPage() {
+function APIManagementPageContent() {
   const [activeTab, setActiveTab] = useState<'overview' | 'keys' | 'webhooks' | 'endpoints' | 'docs'>('overview')
   const [apiKeys, setApiKeys] = useState<APIKey[]>([
     {
@@ -1076,3 +1077,10 @@ export default function APIManagementPage() {
     </div>
   )
 }
+
+// Prevent SSR for this component to avoid hook errors during build
+const APIManagementPage = dynamic(() => Promise.resolve(APIManagementPageContent), {
+  ssr: false
+})
+
+export default APIManagementPage
