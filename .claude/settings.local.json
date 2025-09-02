@@ -32,7 +32,9 @@
       "Bash(npx vercel:*)",
       "Read(C:\\Users\\minei\\Pictures/**)",
       "Bash(git commit:*)",
-      "Read(C:\\Users\\minei\\Pictures/**)"
+      "Read(C:\\Users\\minei\\Pictures/**)",
+      "Bash(git rm:*)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": [],

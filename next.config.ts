@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Force static export mode for Vercel
+  trailingSlash: true,
+  
   // Image configuration
   images: {
+    unoptimized: process.env.NODE_ENV === 'production',
     remotePatterns: [
       {
         protocol: 'https',
@@ -10,7 +14,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.vercel.app',
+        hostname: '**.vercel.app',
       },
     ],
   },
@@ -38,8 +42,8 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // Webpack configuration
-  webpack: (config, { isServer }) => {
+  // Webpack configuration for Vercel compatibility
+  webpack: (config, { isServer, dev }) => {
     // Resolve fallbacks for client-side
     if (!isServer) {
       config.resolve.fallback = {
@@ -47,11 +51,27 @@ const nextConfig: NextConfig = {
         fs: false,
         path: false,
         crypto: false,
+        stream: false,
+        buffer: false,
+        util: false,
+      };
+    }
+    
+    // Optimize for production builds
+    if (!dev && !isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'react/jsx-runtime.js': 'react/jsx-runtime',
+        'react/jsx-dev-runtime.js': 'react/jsx-dev-runtime',
       };
     }
     
     return config;
   },
+  
+  // Vercel-specific optimizations
+  poweredByHeader: false,
+  reactStrictMode: true,
 };
 
 export default nextConfig;
