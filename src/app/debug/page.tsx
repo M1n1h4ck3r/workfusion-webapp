@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-export default function DebugPage() {
+function DebugPageContent() {
   const [testState, setTestState] = useState('Ready')
 
   const testComponents = () => {
@@ -95,3 +96,10 @@ export default function DebugPage() {
     </div>
   )
 }
+
+// Prevent SSR for this component to avoid hook errors during build
+const DebugPage = dynamic(() => Promise.resolve(DebugPageContent), {
+  ssr: false
+})
+
+export default DebugPage
