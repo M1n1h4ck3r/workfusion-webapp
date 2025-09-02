@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Force static export mode for Vercel
-  trailingSlash: true,
   
   // Image configuration
   images: {
