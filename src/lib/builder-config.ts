@@ -1,8 +1,11 @@
-import { builder } from '@builder.io/sdk'
+// Temporarily disable Builder.io to isolate Html import error
+let builder: any = null
 
-// Initialize Builder with your API key (client-side only)
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BUILDER_API_KEY) {
+// Initialize Builder with your API key (client-side only) - DISABLED
+if (false && typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BUILDER_API_KEY) {
   try {
+    const { builder: builderSDK } = require('@builder.io/sdk')
+    builder = builderSDK
     builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!)
   } catch (error) {
     console.warn('Builder.io initialization failed:', error)
@@ -167,4 +170,4 @@ export const builderTheme = {
   }
 }
 
-export default builder
+export default builder || { init: () => {}, get: () => null }
