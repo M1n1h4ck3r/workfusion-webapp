@@ -35,6 +35,7 @@
       "Read(C:\\Users\\minei\\Pictures/**)",
       "Bash(git rm:*)",
       "Bash(vercel:*)",
+      "Read(C:\\Users\\minei\\Desktop/**)",
       "Read(C:\\Users\\minei\\Desktop/**)"
     ],
     "deny": [],
