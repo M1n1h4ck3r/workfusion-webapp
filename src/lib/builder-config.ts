@@ -1,7 +1,9 @@
 import { builder } from '@builder.io/sdk'
 
-// Initialize Builder with your API key
-builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!)
+// Initialize Builder with your API key (client-side only)
+if (typeof window !== 'undefined') {
+  builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!)
+}
 
 // Configure Builder.io settings
 export const builderConfig = {
