@@ -1,8 +1,12 @@
 import { builder } from '@builder.io/sdk'
 
 // Initialize Builder with your API key (client-side only)
-if (typeof window !== 'undefined') {
-  builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!)
+if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_BUILDER_API_KEY) {
+  try {
+    builder.init(process.env.NEXT_PUBLIC_BUILDER_API_KEY!)
+  } catch (error) {
+    console.warn('Builder.io initialization failed:', error)
+  }
 }
 
 // Configure Builder.io settings
