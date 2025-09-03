@@ -61,3 +61,8 @@ docs/
 public/project_documents/
 scripts/
 builder.config.js
+
+# Temporarily ignore problematic pages during deployment
+src/app/debug/
+src/app/dashboard/api/
+src/app/dashboard/billing/

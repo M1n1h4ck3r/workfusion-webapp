@@ -1,24 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Build configuration
+  // Build configuration - ignore all errors for deployment
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Webpack configuration to handle build issues
-  webpack: (config, { isServer }) => {
-    // Ignore specific warnings that cause build failures
-    config.ignoreWarnings = [
-      /Html/,
-      /Head/,
-      /Main/,
-      /NextScript/,
-    ]
-    return config
-  },
+  // Disable problematic features temporarily
+  experimental: {},
   // Image configuration
   images: {
     remotePatterns: [
