@@ -17,8 +17,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
-    "@builder.io/react": "^8.2.6",
-    "@builder.io/sdk": "^6.1.2",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.2.1",
     "@radix-ui/react-avatar": "^1.1.10",
